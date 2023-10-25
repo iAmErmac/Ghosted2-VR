@@ -1,0 +1,28 @@
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_PAGES.acs"
+#import "G_MATH.acs"
+#import "G_TRACKER.acs"
+#import "G_GHOST.acs"
+#import "G_PLAYER.acs"
+#import "G_SIGHT.acs"
+#import "G_ENGINE.acs"
+#import "G_LIGHTS.acs"
+#import "G_MOD.acs"
+#import "G_NOISE.acs"
+#import "G_AI.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_SNOISE.acs"
+
+#library "MAP05"
+
+script 1 open {
+    G_GHOSTMIN = 1000;
+    G_GHOSTMAX = 1003;
+    G_GHOSTTAG = 1500;
+    G_GHOSTSPAWNTAG = 666;
+    G_PAGEMINSPOT = 500;
+    G_PAGEMAXSPOT = 540;
+    PAGE_APPARTING = 256;
+}

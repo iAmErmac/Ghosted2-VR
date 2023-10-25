@@ -1,0 +1,51 @@
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_PAGES.acs"
+#import "G_MATH.acs"
+#import "G_TRACKER.acs"
+#import "G_GHOST.acs"
+#import "G_PLAYER.acs"
+#import "G_SIGHT.acs"
+#import "G_ENGINE.acs"
+#import "G_LIGHTS.acs"
+#import "G_MOD.acs"
+#import "G_NOISE.acs"
+#import "G_AI.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_SNOISE.acs"
+
+
+#library "MAP00"
+
+script 999 open //Set the defaults
+{
+    G_PAGESCOUNT = 8;
+    G_PAGEMINSPOT = 2;
+    G_PAGEMAXSPOT = 40;
+    G_GHOSTTAG = 1350;
+    
+    G_GHOSTMIN = 9000;
+    G_GHOSTMAX = 9002;
+	
+	delay(35 * 2);
+}
+
+/* Map Scrips */
+
+script 2 enter
+{
+   
+    if(PlayerNumber() > 31) {
+        delay(35);
+        Teleport(playerNumber() - 31 + 1001,0,1);
+     } else {
+        Teleport(playerNumber() + 1001,0,1);
+    }
+    delay(10);
+}
+
+script 3 respawn
+{
+   ACS_ExecuteAlways(2,0,0,0,0);
+}

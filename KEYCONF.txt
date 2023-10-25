@@ -1,0 +1,78 @@
+clearplayerclasses
+addplayerclass "G2_Player"
+addplayerclass "G2_PlayerLighter"
+addplayerclass "G2_PlayerGlowstick"
+
+weaponsection "G2"
+setslot 1 GHOffhandFist FlashLight Lighter Glowstick
+setslot 3 Shotgun SuperShotgun
+
+alias HELP "echo GHOSTED 2 CVARS and SETTINGS;DRAWLINE;HELP_SetRecommendedSettings;HELP_GhostCam;HELP_GN;HELP_GNSight;HELP_GNLimiter;HELP_ForceGamemode"
+alias DRAWLINE "echo --------------------------------"
+
+alias HELP_SetRecommendedSettings "echo G2_SetRecommendedSettings - Sets up recommended server settings"
+alias HELP_GhostCam "echo G2_GhostCam - if true, allows usage of camera thru eyes of Ghosts"
+alias HELP_GN "echo G2_V_GN - How much noise should always appear (0 none 5 max)"
+//alias HELP_GNHurt "echo G2_V_GNHurt - How much noise should appear when you are hurt (1 to 7)"
+alias HELP_GNSight "echo G2_V_GNSight - how much noise should be removed when looking at ghosts ()"
+alias HELP_GNLimiter "echo G2_V_GNLimiter - how much noise can appear before cheaper effect is used (recommmended is 10 or less)"
+alias HELP_ForceGamemode "echo G2_V_GNLimiter - how much noise can appear before cheaper effect is used (recommmended is 10 or less)"
+
+
+alias G2_SetRecommendedSettings "dmflags 0;dmflags2 0;set G2_GhostCam 1;sv_forcegldefaults true;set G2_CheapFlashLight 3;set G2_PageAdder 1;set G2_PageAdderCount 4;set G2_MaxRatio 20;echo Ghostcam, gldefaults, padeadder, pageaddercount , MaxRatio... DONE!"
+alias G2_Speed "set G2_CheapFlashlight 1"
+alias G2_Quality "set G2_CheapFlashlight 0"
+
+alias G2_GhostCam "set G2_GhostCam %1" //Enable ghost camera
+alias G2_Notify "set G2_Notify %1" //Notify server!
+
+alias G2_V_GNSight "set G2_V_GNSight %1" //Decrease count of graynoise used when seeing ghost
+alias G2_V_GNHurt "set G2_V_GNHurt %1" //Decrease count of graynoise used when being hurt
+alias G2_V_GN "set G2_V_GN %1" //Decrease count of graynoise used just for eye candy
+alias G2_V_GNLimiter "set G2_V_GNLimiter %1" // How many layers of gray noise can appear before use of cheaper effect?
+
+alias Vid_GrayNoise_Sight "set G2_V_GNSight %1" //Decrease count of graynoise used when seeing ghost
+alias Vid_GrayNoise_Hurt "set G2_V_GNHurt %1" //Decrease count of graynoise used when being hurt
+alias Vid_GrayNoise_Static "set G2_V_GN %1" //Decrease count of graynoise used just for eye candy
+alias Vid_GrayNoise_Limit "set G2_V_GNLimiter %1"  // How many layers of gray noise can appear before use of cheaper effect?
+
+alias Vid_SaveCFG "G2_SaveVidCFG" 
+
+alias G2_SaveVidCFG "archivecvar G2_V_FTYPE;archivecvar G2_V_FQ;archivecvar G2_V_GNLimiter;archivecvar G2_V_GNSight;archivecvar G2_V_GNSHurt;archivecvar G2_V_GN;archivecvar G2_V_GNQuality" //Save Video settings
+alias G2_SaveGCCFG "archivecvar G2_GhostCam" //Save ghost cam settings
+
+alias G2_OverrideGhost "set G2_OverrideGhost %1" //Forfce which ghost to spawn
+alias G2_OverridePort "set G2_OverridePort %1" //Forfce the port simulation
+
+alias G2_ForceGamemode "set G2_ForceGamemode %1" //-1 ETM // 0< Pages count for Classic 
+
+alias G2_NetMode "set G2_NetMode %1;"
+
+alias G2_ScoreCountdown "set G2_ScoreCountdown %1;"
+alias G2_PageAdder "set G2_PageAdder %1;"
+
+//alias G2_Launched "set G2_Launched %1;archivecvar G2_Launched"
+
+alias EnableSlenderMode "G2_OverRideGhost 1;echo SlenderMode will be disabled when quiting the game.."
+alias DisableSlenderMode "G2_OverRideGhost 0;echo SlenderMode is disabled, restart the map.. enjoy something that is more scary.."
+
+addkeysection "Ghosted 2" Ghosted2KeySection
+addmenukey "Show Achievement list" achievementlist
+addmenukey "Delete all achievements" g_removeachievements
+
+alias achievementlist "puke 862"
+alias g_removeachievements "puke 858"
+
+addkeysection "Ghosted 2 \"Ghost Camera\"" Ghosted2CameraKeySection
+addmenukey "Next Ghost" ghostprev 
+addmenukey "Previous Ghost" ghostnext 
+
+alias ghostprev "puke 788 -2"
+alias ghostnext "puke 788 -1"
+
+alias ghostcam "puke 788 %1"
+
+alias changelog "puke 756 %1"
+
+
+alias G2_CheapFlashlight "set G2_CheapFlashlight %1"

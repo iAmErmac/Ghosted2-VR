@@ -1,0 +1,41 @@
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_PAGES.acs"
+#import "G_MATH.acs"
+#import "G_TRACKER.acs"
+#import "G_GHOST.acs"
+#import "G_PLAYER.acs"
+#import "G_SIGHT.acs"
+#import "G_ENGINE.acs"
+#import "G_LIGHTS.acs"
+#import "G_MOD.acs"
+#import "G_NOISE.acs"
+#import "G_AI.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_SNOISE.acs"
+
+#library "MAP03"
+
+script 999 open //Set the defaults
+{
+    G_PAGESCOUNT = 8;
+    G_PAGEMINSPOT = 800;
+    G_PAGEMAXSPOT = 837;
+    G_GHOSTTAG = 1350;
+    
+    G_GHOSTMIN = 9000;
+    G_GHOSTMAX = 9007;
+    
+    PAGE_APPARTING = 300;
+}
+
+script 995 open
+{
+    while(1) {
+        delay(random(35*6,350*12));
+        ThingSound(random(1500,1501),"Map03/TrainBreaks",random(40,80));
+    }
+}
+
+

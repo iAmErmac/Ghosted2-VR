@@ -1,0 +1,127 @@
+Gameinfo
+{
+	AddEventHandlers = "Ghosted2_SpecialWeaponHandler"
+}
+
+DefaultMap
+{
+	InterMusic = "Music/INTERTRACK.flac"
+	evenlighting
+}
+
+map MAP00 "Ghosted I"
+{
+	levelnum = 0
+	next = "MAP01"
+	music = "TBG"
+	SKY1 = "CLOUDSK2", 0.08
+}
+
+map MAP01 "Facility"
+{
+	levelnum = 1
+	next = "MAP02"
+	music = "Music/TRACK1.flac"
+	SKY1 = "CLOUDSKY", 0.08
+}
+
+map MAP02 "Cemetery"
+{
+	levelnum = 2
+	next = "MAP03"
+	music = "Music/TRACK2.flac"
+	SKY1 = "CLOUDSKY", 0.08
+}
+
+map MAP03 "Subway"
+{
+	levelnum = 3
+	next = "MAP04"
+	music = "Music/TRACK3.flac"
+	SKY1 = "CLOUDSKY", 0.08
+}
+
+map MAP04 "Town"
+{
+	levelnum = 4
+	next = "MAP05"
+	music = "Music/TRACK5.flac"
+	SKY1 = "CLOUDSK2", 0.08
+}
+
+map MAP05 "Silent Night"
+{
+	levelnum = 5
+	next = "MAP06"
+	music = "Music/TRACK4.flac"
+	SKY1 = "CLOUDSKY", 0.08
+}
+
+map MAP06 "Advanced Research Corporation"
+{
+	levelnum = 6
+	music = "Music/TRACK7.flac"
+	next = "MAP07"
+	SKY1 = "CLOUDSK3", 0.1
+}
+
+map MAP07 "Hospital"
+{
+	levelnum = 7
+	next = "MAP00"
+	music = "Music/TRACK6.flac"
+	SKY1 = "CLOUDSKY", 0.08
+}
+
+clearepisodes
+
+episode map01
+{
+	name = "01 - Water Cleansing Center"
+	picname = "MP01"
+}
+
+episode map02
+{
+	name = "02 - Evil Tomb"
+	picname = "MP02"
+}
+
+episode map03
+{
+	name = "03 - Subway"
+	picname = "MP03"
+}
+
+episode map04
+{
+	name = "04 - Ghosted I"
+	picname = "MP04"
+}
+
+episode map05
+{
+	name = "05 - Town"
+	picname = "MP05"
+}
+
+episode map06
+{
+	name = "06 - A.R.C."
+	picname = "MP06"
+}
+
+episode map07
+{
+	name = "07 - Hospital"
+	picname = "MP07"
+}
+
+map TITLEMAP "Ghosted2 Titlemap"
+{
+	nointermission
+	levelnum = 0
+	next = "MAP01"
+	music = "THEME"
+	SKY1 = "CLOUDSK2", 0.08
+}

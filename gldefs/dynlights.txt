@@ -1,0 +1,72 @@
+flickerlight G2M_LighterLight {
+	//color 0.4 0.2 0.05
+	color 0.5 0.3 0.05
+	size 120
+	secondarySize 70
+	chance 0.1
+	attenuate 1
+}
+
+pointlight G2M_LighterLight2 {
+	//color 0.4 0.2 0.05
+	color 0.2 0.17 0.0
+	size 20
+	attenuate 1
+	additive 1
+}
+
+Object Lightprojectile {
+	frame TNT1 {light G2M_LighterLight}
+}
+
+Object Lightprojectile2 {
+	frame TNT1 {light G2M_LighterLight2}
+}
+
+object G2_PlayerGlowstick
+{
+	frame TNT1A {light MegaLight}
+	frame PLAYA {light PlayerLight}
+	frame PLAYB {light PlayerLight}
+	frame PLAYC {light PlayerLight}
+	frame PLAYD {light PlayerLight}
+	frame PLAYE {light PlayerLight}
+	frame PLAYF {light PlayerLight}
+	frame PLAYG {light PlayerLight}
+	frame PLAYH {light PlayerLight}
+}
+
+pointlight G2_GlowstickLight {
+	color 0.2 0.4 0.2
+	size 100
+}
+
+pointlight G2_GlowstickLight2 {
+	color 0.8 0.9 0.8
+	size 50
+	additive 1
+}
+
+object GlowStickLight {
+	frame TNT1 {light G2_GlowstickLight}
+}
+object GlowStickLight2 {
+	frame TNT1 {light G2_GlowstickLight2}
+}
+
+object ThrownGlowstick {
+	frame GSTC {light G2_GlowstickLight}
+}
+
+object ThrownGlowstick2 {
+	frame GSTC {light G2_GlowstickLight}
+}
+
+object Glowstick {
+	frame GSTC {light G2_GlowstickLight}
+	frame GSTG {light G2_GlowstickLight}
+}
+
+object Glowstick2 {
+	frame GSTC {light G2_GlowstickLight}
+}

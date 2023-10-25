@@ -1,0 +1,116 @@
+actor G2_FogSpawner 31220
+{
+	+CLIENTSIDEONLY
+	+NOGRAVITY
+	+NOBLOCKMAP
+	States {
+		Spawn3:
+		TNT1 AAAAAAAAAA 1 A_SpawnItemEx("G2_Fog",0,0,random(0,2), random(1,64),random(-1,1),0,random(0,360))
+		goto Spawn2
+		Spawn:
+		TNT1 A 0
+		TNT1 A 0 Thing_ChangeTID(0,8001)
+		Spawn2:
+		TNT1 A 0
+		TNT1 A 0 A_CheckSight("UnSee")
+		TNT1 A 4 A_SpawnItemEx("G2_Fog",0,0,random(0,4), random(1,32),random(-3,3),0,random(0,360))
+		loop
+		UnSee:
+		TNT1 A 10
+		TNT1 AAAAAAA 1 A_CheckSight("UnSee")
+		TNT1 A 5
+		goto Spawn3
+		Off:
+		TNT1 A 1
+		TNT1 A -1
+		loop
+	}
+}
+
+actor G2_Fog 
+{
+	renderstyle add
+	alpha 0.025
+	
+	+CLIENTSIDEONLY
+	+NOGRAVITY
+	+THRUACTORS
+	+NOBLOCKMAP
+	+MISSILE
+	+HEXENBOUNCE
+	damage 0
+	
+	height 2
+	radius 2
+	
+	xscale 0.55
+	yscale 0.25
+	States {
+		Spawn:
+			TNT1 A 10
+			TNT1 A 0 A_Stop
+			TNT1 A 0 A_Jump(255,"A","B","C")
+			TNT1 A 55
+		A:
+			MFOG AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 1 A_FadeIn(0.0015)
+		Aout:
+			MFOG A 1 A_FadeOut(0.0005)
+			loop
+		B:
+			MFOG BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB 1 A_FadeIn(0.0015)
+		Bout:
+			MFOG B 1 A_FadeOut(0.0005)
+			loop
+		C:
+			MFOG CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 1 A_FadeIn(0.0015)
+		Cout:
+			MFOG C 1 A_FadeOut(0.0005)
+			loop
+		
+	}
+}
+/*
+actor G2_Fog 
+{
+	renderstyle add
+	alpha 0.025
+	
+	+CLIENTSIDEONLY
+	+NOGRAVITY
+	
+	height 2
+	radius 2
+	
+	xscale 2.1
+	yscale 0.55
+	
+	//+FLOATBOB
+	
+	States {
+		Spawn:
+		TNT1 A 15
+		TNT1 A 0 A_Stop
+		TNT1 A 5
+		RSMK A 0 //A_CheckSight("Stopping")
+		RSMK A 0 A_Jump(50,"A")
+		RSMK A 0 A_Jump(50,"B")
+		RSMK A 0 A_Jump(50,"D")
+		goto C
+		A:
+		RSMK AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 1 A_FadeIn(0.003)
+		RSMK AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 1 A_FadeOut(0.003)
+		stop
+		B:
+		RSMK BBBBBBBBBBBBBBBBBBBBBBBBBBBBB 1 A_FadeIn(0.003)
+		RSMK BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB 1 A_FadeOut(0.003)
+		stop
+		C:
+		RSMK CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 1 A_FadeIn(0.003)
+		RSMK CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 1 A_FadeOut(0.003)
+		stop
+		D:
+		RSMK DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD 1 A_FadeIn(0.003)
+		RSMK DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD 1 A_FadeOut(0.003)
+		stop
+	}
+}*/

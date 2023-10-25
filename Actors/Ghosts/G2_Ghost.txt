@@ -1,0 +1,54 @@
+actor G2_Ghost {
+	MONSTER
+	-COUNTKILL
+	health 666666
+	height 56
+	radius 32
+	
+	CameraHeight 46
+	
+	damagefactor "G2_Weapons", 100.0
+
+	renderstyle translucent
+	alpha 1.0
+
+	States {
+		Death:
+		Death.G2_Weapons:
+			TNT1 A 0
+			TNT1 AAA 0 A_SpawnItemEx("RVDG_XDEATH")
+			TNT1 AAAAAAAAAAAAAAA 10 A_SpawnItemEx("RVDG_XDEATH_Spread")
+			TNT1 A 0 A_GiveToTarget("G2_GhostBuster")
+			stop
+
+		Banish:
+			//"####" "#" 1 A_FadeOut(0.03) //FY zandronum
+			TNT1 A 0
+			TNT1 A 0 Thing_ChangeTID(0,0)
+			TNT1 AAAAAAAAAAA 0 A_SpawnItemEx("G2_BlackMist",random(-20,20),random(-20,20),random(-5,70),random(-2,2),random(-2,2),random(-2,2))
+			TNT1 AAAAAAAAAAA 1 A_SpawnItemEx("G2_BlackMist",random(-20,20),random(-20,20),random(-5,70),random(-2,2),random(-2,2),random(-2,2))
+			stop
+	}
+}
+
+actor G2_BlackMist {
+	+CLIENTSIDEONLY
+	+NOGRAVITY
+	+NOBLOCKMAP
+	+THRUACTORS
+	+HEXENBOUNCE
+	+MISSILE
+	damage 0
+
+	renderstyle translucent
+	alpha 1.0
+
+	height 2
+	radius 2
+
+	States {
+		Spawn:
+			RSMK BCDC 4 A_FadeOut(0.05)
+			loop
+	}
+}

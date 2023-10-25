@@ -1,0 +1,4 @@
+version "3.5"
+
+#include "zscript/weapon_base.txt"
+#include "zscript/flashlight.txt"

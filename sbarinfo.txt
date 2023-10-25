@@ -1,0 +1,49 @@
+LowerHealthCap false;
+interpolatehealth true, 4; //Hexen's default is 8
+interpolatearmor true, 8; //Hexen's default is 8
+completeborder true;
+monospacefonts true, "0";
+//Resolution 1600 ,1200;
+
+Statusbar FullScreen, FullScreenOffsets
+{	
+	DrawBar "HPBAR2" , "HPBAR1", health , Horizontal , 40 , -50;
+
+	/*IsSelected FlashLight {
+	
+		InInventory not G2_EmptyBattery {
+			DrawBar "BATBAR1" , "BATBAR2", batterypower , vertical, -80 ,-120;
+		}
+		
+		InInventory G2_EmptyBattery { //Missing ELSE because of zandronum
+			DrawBar "BATBAR1" , "BATBAR3", batterypower , vertical, -80 ,-120;
+		}
+		
+		InInventory battery {
+			DrawNumber 2, HUDFONT_DOOM , WHITE , battery , -60, -50;	
+		}
+		
+	}*/
+	
+	IsSelected not FlashLight {
+		UsesAmmo {
+			DrawNumber 4, HUDFONT_DOOM , WHITE , ammo1 , -50, -50;
+		}
+		
+		UsesSecondaryAmmo {
+			DrawNumber 4, HUDFONT_DOOM , WHITE , ammo2 , -20, -45;
+		}
+	}
+	
+	DrawSelectedInventory alwaysshowcounter,HUDFONT_DOOM,-150,-70,-150,-60;
+}
+
+statusbar inventory // Standard bar overlay (ZDoom Addition)
+{
+	drawinventorybar Doom, 5, INDEXFONT, 50, 170;
+}
+
+statusbar inventoryfullscreen // ZDoom HUD overlay.
+{
+	drawinventorybar Doom, translucent, 5, INDEXFONT, 50, 170;
+}

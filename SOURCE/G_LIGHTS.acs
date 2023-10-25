@@ -1,0 +1,128 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_LIGHTS.acs - Light breaking scripts     //
+//////////////////////////////////////////////
+#include "zcommon.acs"
+#import "G_MATH.acs"
+#import "G_MAIN.acs"
+#import "G_ENGINE.acs"
+#import "G_PAGES.acs"
+
+#library "G_LIGHTS"
+
+int LIGHTS_BREAK = 0;
+int LIGHTS_BREAKBYPAGE = 0;
+
+int LIGHTS_SYNCED = 0;
+int LIGHTS_FORCE = 1;
+int LIGHTS_SOFTWARE = 100;
+int LIGHTS_BRIGHT = 128;
+int LIGHTS_DARK = 0;
+
+script 350 (void) {
+	setResultValue(LIGHTS_BREAK);
+}
+
+script 351 (void) {
+	LIGHTS_BREAK--;
+}
+
+function int Lights_CalculateBreaksPerPage(void) {
+	//return (ThingCount(0,3500) / max(1,G_PAGESCOUNT+(4-getskill() ) ));
+	return (ThingCount(0,3500) / max(1,G_PAGESCOUNT+10+(4-getskill() ) ));
+}
+
+function void Light_ChangeAllToValue(int inten) { for(int i = 0;i < 300;i++) { Light_ChangeToValue(i,inten); } }
+function void Light_ChangeToColor(int r,int g,int b,int s) { for(int i = 0;i < 300;i++) { Sector_SetColor(i,r,g,b,s); } }
+
+//SCRIPTS forcing sector brightness
+
+script 355 open {
+	delay(1);
+	if(ENGINE_DESYNCACS) {
+		ACS_ExecuteAlways(357,0,LIGHTS_FORCE,LIGHTS_DARK,(LIGHTS_BRIGHT << 16) | LIGHTS_SOFTWARE);
+		LIGHTS_SYNCED = 1;
+	}
+	
+	if(LIGHTS_FORCE) {
+		if(ENGINE_DESYNCACS) {
+			Light_ChangeAllToValue(LIGHTS_BRIGHT);
+		} else {
+			if(getcvar("vid_renderer") != 0) {
+				Light_ChangeAllToValue(LIGHTS_DARK);
+			} else { 
+				Light_ChangeAllToValue(LIGHTS_SOFTWARE);
+			}
+		}
+	}
+	
+	delay(5);
+	
+	if(LIGHTS_BREAKBYPAGE == 0) {
+		LIGHTS_BREAKBYPAGE = Lights_CalculateBreaksPerPage();
+	}
+}
+
+script 357 (int lightforce,int dark,int bright) clientside {
+	if(LIGHTS_SYNCED == 0) {
+		LIGHTS_SYNCED = 1;
+		LIGHTS_BRIGHT = (bright & 0xFFFF0000) >> 16;
+		LIGHTS_SOFTWARE = bright & 0x0000FFFF;
+		LIGHTS_FORCE = lightforce > 0;
+		LIGHTS_DARK = dark;
+	}
+}
+
+script 356 enter clientside {
+	if(playerNumber() != consoleplayernumber()) terminate;
+	
+	delay(1);
+	if(!ENGINE_DESYNCACS) { terminate; }
+	
+	while(LIGHTS_SYNCED == 0) delay(1);
+	
+	if(getcvar("G2_Debug")) {
+		log(s:"Data Recieved: ForceLights?: ",d:LIGHTS_FORCE,s:"  dark: ",d:LIGHTS_DARK,s:"  ",d:(LIGHTS_BRIGHT & 0xFFFF0000) >> 16,s:"  software dark: ",d:(LIGHTS_SOFTWARE & 0x0000FFFF));
+	}
+	
+	delay(2);
+	if(!ENGINE_DESYNCACS) { terminate; }
+	if(!LIGHTS_FORCE) terminate;
+	if(PlayerIsSpectator(PlayerNumber()) > 0) terminate;
+
+	int i;
+	if(getCvar("vid_renderer") == 0) { // && gametype() != GAME_SINGLE_PLAYER
+		for(i = 0;i < 3;i++) {
+			if(PlayerIsSpectator(PlayerNumber()) > 0) terminate;
+			Light_ChangeAllToValue(LIGHTS_SOFTWARE);
+			delay(20);
+		}
+	} else {
+		for(i = 0;i < 3;i++) {
+			if(PlayerIsSpectator(PlayerNumber()) > 0) terminate;
+			Light_ChangeAllToValue(LIGHTS_DARK);
+			delay(20);
+		}
+	}
+}
+
+script 358 (int player) disconnect clientside {
+	if(player != consoleplayernumber()) terminate;
+	while(LIGHTS_SYNCED == 0) delay(1);
+	if(ENGINE_DESYNCACS) {
+		if(PlayerIsSpectator(player) == 1) {
+			if(LIGHTS_FORCE) {
+				if(LIGHTS_SOFTWARE > LIGHTS_BRIGHT && getCvar("vid_renderer") == 0)
+					Light_ChangeAllToValue(LIGHTS_SOFTWARE + 50);
+				else
+					Light_ChangeAllToValue(LIGHTS_BRIGHT);
+			}
+		}
+	}
+}
+
+/*script 352 (int tid) {
+	setresultvalue(thingcount(0,tid));
+}*/

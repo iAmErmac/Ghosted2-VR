@@ -1,0 +1,864 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_MAIN.acs - Player Scripts,Global Scripts//
+//////////////////////////////////////////////
+#library "G_MAIN"
+
+#include "zcommon.acs"
+#import "G_SIGHT.acs"
+#import "G_MATH.acs"
+#import "G_PAGES.acs"
+#import "G_ENGINE.acs"
+#import "G_LIGHTS.acs"
+#import "G_GHOST.acs"
+#import "G_TRACKER.acs"
+#import "G_MOD.acs"
+#import "G_NOISE.acs"
+#import "G_PLAYER.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_NET.acs"
+
+
+str version = "v2.1.0";
+
+#define VERSION_ID 8
+
+#define GG_PARAREL 10
+/* SCORE BOARD X hudmessage possition*/
+#define S_NAME_X 175.0
+#define S_PAGE_X 275.0
+#define S_DAMAGE_X 375.0
+#define S_SCORE_X 475.0
+#define S_TIME_X 575.0
+#define S_TOPY 110.0
+int S_YMULT = 20.0;
+
+#libdefine PLAYERTAGSTART 5000
+
+#libdefine GAMEMODE_NORMAL 0
+#libdefine GAMEMODE_ENDLESS 1
+
+int G_GAMEMODE = 0; 
+
+int G_PAGEMINSPOT = 0; //K good
+int G_PAGEMAXSPOT = 0; //K great
+int G_DISTANCION = 1; //0 spawns pages appart, 1 doesn't
+//Wait what? It's the other way around, you fool! Maybe the code is broken!
+
+int G_GHOSTSPAWNED[GG_PARAREL];
+int G_GHOSTSPAWNEDOLD[GG_PARAREL];
+int G_GHOSTMIN = 0;
+int G_GHOSTMAX = 0;
+int G_GHOSTTAG = 1500;
+int G_GHOSTSPAWNTAG = 666;
+
+//Game Status
+int G_GAMEOVER = 0;
+
+//Custom Player Count Function
+
+int G_PLAYERINGAME[64];
+int G_PLAYERCOUNT = 0;
+int G_PLAYERMAXWAS = 0;
+
+//ScoreBoard Variables
+int S_TIME = 0;
+int S_TIMEDEATH[64];
+int S_SCORE[64];
+int S_PAGES[64];
+int S_DAMAGE[64];
+int S_AT[64];
+int S_PRINT;
+int S_STARTTIME = 0;
+
+function int PlayerTag(int pnum) {
+	return pnum + PLAYERTAGSTART;
+}
+
+script 290 (int a,int b) {
+	switch(a) {
+		case 0:
+			print(s:"1 Lights_Break=b, 10 PrintGhostSpeed(b), 600 G_Screamer(b), 601 G_ScreamerClosestTypeB",
+			s:"700 Print Achievement Message");
+			break;
+		case 1: LIGHTS_BREAK = b; break;
+		case 2: print(s:"Ghost speed: ",d:GHOST_CalculateSpeed(b,2),s:" Fixed: ",f:GHOST_CalculateSpeed(b,2)); break;
+		case 600:	G_Screamer(b); break;
+		case 601:	
+			int c_601 = Ghost_ClosestByType(0,b);
+			if(c_601 != -1) {
+				G_Screamer(c_601);
+			}
+			break;
+		case 700:
+			ACS_ExecuteAlways(866,0,b,0,0);
+			break;
+	}
+}
+
+script 555 enter {
+	if(G_PLAYERINGAME[PlayerNumber()] == 0) {
+		G_PLAYERCOUNT++;
+	}
+	
+	if(G_PLAYERMAXWAS < 64) {
+		G_PLAYERMAXWAS++;
+	}
+	
+	G_PLAYERINGAME[PlayerNumber()] = 1;
+}
+
+script 556 (int player) disconnect  {
+	if(G_PLAYERINGAME[player] > 0) {
+		G_PLAYERINGAME[player] = 0; 
+		G_PLAYERCOUNT--;
+	}
+}
+
+function int G_PlayerConnected(int player) { return G_PLAYERINGAME[player]; }
+function int G_GetPlayerCount(void) { return G_PLAYERCOUNT; }
+
+int PLAYER_GHOSTCAM[64];
+
+#define HID_GC 3500
+#define HID_GCBG 3501
+#define GC_Y 520.0
+#define GC_BGY 1040.0
+
+
+script 788 (int id) net  { //GHOST CAMERA
+	G_ShowMessageBackground();
+	sethudsize(800,600,0);
+	setfont("SMALLFONT");
+	localambientsound("Ghosted2/Menu/Click",80);
+	
+	if(GetActorProperty(PlayerTag(PlayerNumber()),APROP_HEALTH) > 0 && getCvar("G2_GhostCam") == 0) {
+		hudmessage(s:"You cannot use this function\nbecause it is disabled\nand you are still alive...";HUDMSG_FADEOUT,HID_GC,CR_RED,400.0,GC_Y,2.0);
+		terminate;
+	} else if(getCvar("G2_GhostCam") == 1 && GetActorProperty(PlayerTag(PlayerNumber()),APROP_HEALTH) > 0) {
+		hudmessage(s:"You cannot use this function\nbecause you are still alive...";HUDMSG_FADEOUT,HID_GC,CR_RED,400.0,GC_Y,2.0);
+		terminate;
+	} else if (getCvar("G2_GhostCam") == 0) {
+		hudmessage(s:"You cannot use this function\nbecause it is disabled...";HUDMSG_FADEOUT,HID_GC,CR_RED,400.0,GC_Y,2.0);
+		terminate;
+	} else {
+		if(id >= 0) {
+			PLAYER_GHOSTCAM[PlayerNumber()] = clamp(0,GG_PARAREL-1,id);
+		} else {
+			do {			
+				if(id == -1) {
+					PLAYER_GHOSTCAM[PlayerNumber()]++;
+				} else {
+					PLAYER_GHOSTCAM[PlayerNumber()]--;
+				}
+				
+				if(PLAYER_GHOSTCAM[PlayerNumber()] < 0) {
+					PLAYER_GHOSTCAM[PlayerNumber()] = GG_PARAREL - 1;
+				} else if(PLAYER_GHOSTCAM[PlayerNumber()] >= GG_PARAREL) {
+					PLAYER_GHOSTCAM[PlayerNumber()] = 0;
+				}
+			} while(!Ghost_IsSpawned(PLAYER_GHOSTCAM[PlayerNumber()]) && Ghost_Count() > 0);
+			id = PLAYER_GHOSTCAM[PlayerNumber()];
+		}
+		
+		if(Ghost_IsSpawned(id)) {
+			changecamera(G_GHOSTTAG + id,0,0);
+			hudmessage(s:"Watching ghost \cc",d:id+1,s:"\cg (\cc",s:GHOSTNAMES[Ghost_Type(id)],s:"\cg)";HUDMSG_FADEOUT,HID_GC,CR_RED,400.0,GC_Y,2.0);
+		} else {
+			if(Ghost_Count() > 0) {
+				hudmessage(s:"Ghost (\ccIndex:",d:id,s:"\cg) is not spawned";HUDMSG_FADEOUT,HID_GC,CR_RED,400.0,GC_Y,2.0);
+			} else {
+				hudmessage(s:"No Ghosts are present...";HUDMSG_FADEOUT,HID_GC,CR_RED,400.0,GC_Y,2.0);
+			}
+		}
+	}
+}
+
+function void G_ShowMessageBackground(void) {
+	sethudsize(1600,1200,0);
+	setfont("MSGBG");
+	hudmessage(s:"A";HUDMSG_FADEOUT,HID_GCBG,CR_RED,800.0,GC_BGY,2.25);
+}
+
+
+
+script 400 open { // Main Script
+	if(isTitlemap()) { terminate; } // TERMINATE IF YOU ARE IN TITLEMAP
+
+	ENGINE_Init(); //Detect which source port are you using (Server detection)
+	delay(1);
+	
+	NET_Init(); // Make and Send NET Key to CLIENTS
+	delay(1);
+	
+	MOD_Detect(); // Detect if there are other mods loaded
+	if(mod_brutaldoom + mod_ghosted1 > 0) {
+		printbold(s:"\cgGhosted 2 has detected presence of additional parasitic mods\n\cfThese mods will most likely damage this mod..."); delay(35 * 3);
+
+		if(mod_brutaldoom) { printbold(s:"\cfPlease unload: \ccBrutal Doom\n\nI know you like brutal doom so much, but please unload it :("); delay(35 * 2); }
+		if(mod_ghosted1) { printbold(s:"\cfPlease unload: \ccGhosted 1\n\nbtw thanks for having that one ;)"); delay(35 * 2); }
+		if(mod_ghosted2old) { printbold(s:"\cfPlease unload: \ccOlder version of Ghosted 2\n\nYou don't need Ghosted2 to play Ghosted2v2..."); delay(35 * 2); }
+		delay(35 * 5); printbold(s:"You can still play if you want, but I am not responsible for any incompatibility and errors");
+	}
+	
+	// Detect which source port (Server)
+	
+	PAGE_CheckForErrors(); //Checks for duplicate or lack of pagespots
+	delay(1);
+	
+	if(TidIsReserved(G_GHOSTTAG)) {
+		if(TidIsUsed(G_GHOSTTAG) > 0 && G_GHOSTTAG > 0) {
+			ThrowException("G_MAIN","400",strparam(s:"\cgG_GHOSTTAG is ",d:G_GHOSTTAG,s:"\n\cgThe TID is conflicting with already existing one!"));
+		} else if(TidIsReserved(G_GHOSTTAG) != 0 && G_GHOSTTAG > 0){
+			ThrowException("G_MAIN","400",strparam(s:"\cgG_GHOSTTAG is ",d:G_GHOSTTAG,s:"\n\cgThe TID is reserved for GHOSTED2 stuff!"));
+		} else {
+			ThrowException("G_MAIN","400",strparam(s:"\cgG_GHOSTTAG is ",d:G_GHOSTTAG,s:"\n! It has to be above zero... I recommend value 1500 or something"));
+		}
+	}
+	
+	if(ENGINE_CONSOLECOMMAND && GameType() == GAME_SINGLE_PLAYER) {
+		consolecommand("sv_forcegldefaults 1");
+	}
+	
+	if(GetCvar("G2_GAMEMODE") == GAMEMODE_ENDLESS) G_GAMEMODE = GAMEMODE_ENDLESS;
+	
+	delay(1); //Wait for clients to send their stats
+	/*if(getcvar("G2_DynamicSkill")) {
+		int li = 0,overtime = 0;
+		for(;li < 64 && overtime < 350;li++,overtime++) {
+			if(PLAYER_LOGGEDIN[li] == 0 && PlayerIsAlive(li) && !PlayerIsBot(li)) {
+				delay(1); li--; continue;
+			}
+		}
+		
+		if(overtime >= 1000 && getcvar("G2_DEBUG")) {
+			log(s:"Timeout on logging waiting, no more can be recieved now!");
+		}
+		
+		PLAYER_STOPLOGGING = 1;
+		
+		if(getcvar("G2_DontLowerRatio") == 0) {
+			Player_LimitAverageWinLoss();
+			delay(1);
+		}
+		
+		int rat = Player_GetAverageWinLossRatio();
+		int newskill = 0;
+		delay(1);
+		
+		if(rat < 0.70) {
+			newskill = 0;
+		} else if(rat < 1.0) {
+			newskill = 1;
+		} else if(rat < 1.6) {
+			newskill = 2;
+		} else if(rat < 2.1) {
+			newskill = 3;
+		} else {
+			newskill = 4;
+		}
+		
+		if(ENGINE_CONSOLECOMMAND) {
+			consolecommand(strparam(s:"set G2_Skill ",d:newskill+1));
+		} else if(ENGINE_SETCVAR){
+			setcvar("G2_Skill",newskill+1);
+		}
+	}
+	
+	if(GetCvar("G2_Debug") > 0) {
+		log(s:"Average Win/Loss ratio: ",f:Player_GetAverageWinLossRatio());
+		log(s:"Lowest ratio: ",f:PLAYER_LOWRATIO);
+	}*/
+
+	if(GetCvar("G2_Debug") > 0) {
+		log(s:"Spawning pages...");
+	}
+	
+	NET_Server_SendToAllClients(863,3,getSkill());
+	Page_Init(); //Now modify the page count!
+	delay(1);
+	ACS_Execute(409,0,0,0,0); //Page spawning script
+
+	if(G_GAMEMODE == GAMEMODE_ENDLESS) {
+		sethudsize(800,600,0);
+		setfont("BIGFONT");
+		hudmessagebold(s:"ENDLESS TERROR MODE";HUDMSG_TYPEON,0,CR_RED,400.0,100.0,3.5);
+		delay(35);
+		setfont("SMALLFONT");
+		hudmessagebold(s:"Pick as many pages you can before they get you...";HUDMSG_TYPEON,0,CR_WHITE,400.0,150.0,2.5);
+	}
+	
+	while(G_GAMEOVER == 0) {
+		
+		if(G_GetSurvivingPlayerCount() == 0 && PAGE_PICKED != 0) {
+			G_GAMEOVER = 2;
+		}
+		
+		if( (PAGE_PICKED >= G_PAGESCOUNT && G_GAMEMODE != GAMEMODE_ENDLESS)) {
+			G_GAMEOVER = 1;
+		}
+		
+		if(getcvar("G2_AutoSkill") > 0 && playercount() == 0 && ENGINE_SURVIVALGAMEMODE && GetGameModeState() == 0 ) {
+			SaveTempCvar("G2_Skill",3);
+		}
+		
+		delay(40);
+	}
+	
+	S_TIME = (timer()-S_STARTTIME);
+	TRACKER_Server_MapTime(S_TIME);
+	
+
+	if(G_GAMEOVER == -1) {
+		delay(35 * 2);
+		printbold(s:"\cgMain Game Script was forced to stop!\nCheck Console for errors!");	
+		delay(35 * 2);
+	}
+
+	
+	
+	if(GameType() == GAME_SINGLE_PLAYER) {
+		delay(35 * 2);
+	}
+	
+	NET_Server_SendToAllClients(863,3,getSkill());
+	delay(20);
+	NET_Server_SendToAllClients(863,1,G_GAMEOVER);
+	
+	int countdowntime = 12 + (PlayerCount() / 2);
+	if(getCvar("G2_ScoreCountDown") > 0 && getCvar("G2_ScoreCountDown") < 60) countdowntime = getCvar("G2_ScoreCountDown");
+	sethudsize(800,600,0);
+	
+	
+	if(getcvar("G2_AutoSkill") > 0) {
+		if(playercount() == 0) {
+			SaveTempCvar("G2_Skill",3);
+		} else {		
+			if(G_GAMEOVER == 1 && GetCvar("G2_LastRoundStatus") == 1) {
+				SaveTempCvar("G2_Skill",clamp(1,5,getcvar("g2_skill")+1));
+			} else if(G_GAMEOVER == 2 && GetCvar("G2_LastRoundStatus") == 2) {
+				SaveTempCvar("G2_Skill",clamp(1,5,getcvar("g2_skill")-1));
+			}
+			SaveTempCvar("G2_LastRoundStatus",0);
+		}
+	}
+	SaveTempCvar("G2_LastRoundStatus",G_GAMEOVER);
+	
+	for(int i = countdowntime;i > 0;i--) {
+		int S_SERVERSTATS_X = 680.0;
+		int S_SERVERSTATS_Y = 520.0;
+		int minutes,seconds;
+		
+		// WIN OR LOSE graphics
+		if(G_GAMEOVER == 1) { 
+			setfont("UWIN");
+		} else if (G_GAMEOVER == 2) { 
+			setfont("ULOSE");
+		} else {
+			setfont("CONFONT");
+			hudmessagebold(s:"#",d:G_GAMEOVER;HUDMSG_FADEOUT,5520,CR_RED,400.0,95.0,3.0);
+			setfont("FERROR");
+		}
+		
+		//Top black fade
+		hudmessagebold(s:"A";HUDMSG_FADEOUT,5506,CR_RED,400.0,65.0,3.0);
+		/*setfont("EDGEBOT");
+		hudmessagebold(s:"A";HUDMSG_FADEOUT,5507,CR_RED,400.0,580.0,3.5);*/
+		setfont("EDGETOP");
+		hudmessagebold(s:"A";HUDMSG_FADEOUT,5521,CR_RED,400.0 ,0.0 ,3.5);
+		
+		if(GameType() != GAME_SINGLE_PLAYER) {
+			setfont("SMALLFONT");
+			
+			hudmessagebold(s:"Name";HUDMSG_FADEOUT,5500,CR_RED,S_NAME_X,S_TOPY,3.0);
+			hudmessagebold(s:"Picked Pages";HUDMSG_FADEOUT,5501,CR_RED,S_PAGE_X,S_TOPY,3.0);
+			hudmessagebold(s:"Damage Taken";HUDMSG_FADEOUT,5502,CR_RED,S_DAMAGE_X,S_TOPY,3.0);
+			hudmessagebold(s:"Score";HUDMSG_FADEOUT,5503,CR_RED,S_SCORE_X,S_TOPY,3.0);
+			hudmessagebold(s:"Time of Death";HUDMSG_FADEOUT,5504,CR_RED,S_TIME_X,S_TOPY,3.0);
+			
+			
+			
+			if(TRACKER_IsEnabled()) {
+				hudmessagebold(s:"Server statistics";HUDMSG_FADEOUT,5509,CR_RED, S_SERVERSTATS_X, S_SERVERSTATS_Y,3.0);
+				
+				if(TRACKER_MATCHTIME != 0 && TRACKER_MATCHES != 0) {
+					hudmessagebold(s:"Total Matches played: ",d:TRACKER_MATCHES;HUDMSG_FADEOUT,5510,CR_WHITE, S_SERVERSTATS_X ,S_SERVERSTATS_Y + 10.0 ,3.0);
+			
+					if(TRACKER_MATCHES != 0) {
+						hudmessagebold(s:"Average time: ",d:TRACKER_MATCHTIME / TRACKER_MATCHES,s:" seconds";HUDMSG_FADEOUT,5511,CR_WHITE,S_SERVERSTATS_X,S_SERVERSTATS_Y + 20.0 ,3.0);
+					} else {
+						hudmessagebold(s:"Average time: N/A";HUDMSG_FADEOUT,5511,CR_WHITE, S_SERVERSTATS_X,S_SERVERSTATS_Y + 20.0,3.0);
+					}
+				} else {
+				
+				}
+				
+				hudmessagebold(s:"Largest Player score: ",d:TRACKER_LSCORE;HUDMSG_FADEOUT,5512,CR_WHITE, S_SERVERSTATS_X,S_SERVERSTATS_Y + 30.0,3.0);
+				hudmessagebold(s:"Largest Player count: ",d:TRACKER_LPLCOUNT;HUDMSG_FADEOUT,5513,CR_WHITE, S_SERVERSTATS_X,S_SERVERSTATS_Y + 40.0,3.0);
+				
+				setfont("GHSTD2B");
+				hudmessagebold(s:"a";HUDMSG_FADEOUT,5514,CR_RED,800.0 - S_SERVERSTATS_X,S_SERVERSTATS_Y + 20.0,3.0);
+			}
+			
+		}
+		
+		int nextx = 0;
+		S_YMULT = 10.0;
+		
+		if(GameType() == GAME_SINGLE_PLAYER) {
+			setfont("BIGFONT");
+			if(S_PAGES[0] != PAGE_PICKED || S_PAGES[0] != G_PAGESCOUNT) {
+				if(S_PAGES[0] != 1) {
+					hudmessagebold(s:"You picked \cc",d:S_PAGES[0],s:"\cg pages out of \cc",d:G_PAGESCOUNT; HUDMSG_FADEOUT, 5000, CR_RED, 400.0, 250.0 ,3.0);
+				} else {
+					hudmessagebold(s:"You picked \cc",d:S_PAGES[0],s:"\cg page out of \cc",d:G_PAGESCOUNT; HUDMSG_FADEOUT, 5000, CR_RED, 400.0, 250.0 ,3.0);
+				}
+			} else {
+				hudmessagebold(s:"You picked all \cc",d:S_PAGES[0],s:"\cg pages!"; HUDMSG_FADEOUT, 5000, CR_RED, 400.0, 250.0 ,3.0);
+			}
+			
+			hudmessagebold(s:"You took \cc",d:S_DAMAGE[0],s:"\cg damage!"; HUDMSG_FADEOUT, 5001, CR_RED, 400.0, 300.0 ,3.0);
+			S_SCORE[0] = G_CalculateScore(0);
+			
+			hudmessagebold(s:"Your score is total of \cc",d:S_SCORE[0]; HUDMSG_FADEOUT, 5002, CR_RED, 400.0, 350.0 ,3.0);
+			
+			if(S_TIMEDEATH[0] != 0) {
+				minutes = (S_TIMEDEATH[0] / 35) / 60;
+				seconds = (S_TIMEDEATH[0] / 35) % 60;
+				
+				if(seconds >= 10) {
+					hudmessagebold(s:"... but you died at ",d:minutes,s:":",d:seconds; HUDMSG_FADEOUT, 5003, CR_BLACK, 400.0, 480.0 ,3.0);
+				} else {
+					hudmessagebold(s:"... but you died at ",d:minutes,s:":0",d:seconds; HUDMSG_FADEOUT, 5003, CR_BLACK, 400.0, 480.0 ,3.0);
+				}
+			}
+			delay(1);
+		} else {
+			for(int ppl = 0;ppl < 64;ppl++) {
+				
+				
+				/*if(IsZandronum()) { //TODO: Make ENGINE_ variable for this?
+					if(PlayerIsSpectator(ppl) == 0 && !PlayerIsAlive(ppl)) continue;
+				} else*/
+
+				if(!G_PlayerConnected(ppl)) continue;
+				
+				S_SCORE[ppl] = G_CalculateScore(ppl);
+				
+				if( TRACKER_IsEnabled() ) {
+					TRACKER_Server_Score(ppl,S_SCORE[ppl],S_PAGES[ppl],GetLevelInfo(LEVELINFO_LEVELNUM),G_PLAYERCOUNT,S_TIME,G_GAMEOVER);
+				}
+				
+				minutes = (S_TIMEDEATH[ppl] / 35) / 60;
+				seconds = (S_TIMEDEATH[ppl] / 35) % 60;
+				
+				setfont("SMALLFONT");
+				hudmessagebold(n:ppl+1; HUDMSG_FADEOUT, 5000+nextx, random(0,15), S_NAME_X, (S_YMULT*nextx)+S_TOPY+20.0 ,3.0);
+				hudmessagebold(d:S_PAGES[ppl];HUDMSG_FADEOUT,5100+nextx,CR_GOLD,S_PAGE_X, (S_YMULT*nextx)+S_TOPY+20.0 ,3.0);
+				hudmessagebold(d:S_DAMAGE[ppl];HUDMSG_FADEOUT,5200+nextx,CR_RED,S_DAMAGE_X,(S_YMULT*nextx)+S_TOPY+20.0,3.0);
+				hudmessagebold(d:S_SCORE[ppl];HUDMSG_FADEOUT,5300+nextx,CR_WHITE,S_SCORE_X,(S_YMULT*nextx)+S_TOPY+20.0,3.0);
+				
+				if(S_TIMEDEATH[ppl] == 0) {
+					hudmessagebold(s:"N/A";HUDMSG_FADEOUT,5400+nextx,CR_WHITE,S_TIME_X,(S_YMULT*nextx)+S_TOPY+20.0,3.0);
+				} else {
+					if(seconds < 10) {
+						hudmessagebold(d:minutes,s:":0",d:seconds;HUDMSG_FADEOUT,5400+nextx,CR_ORANGE,S_TIME_X,(S_YMULT*nextx)+S_TOPY+20.0,3.0);
+					} else {
+						hudmessagebold(d:minutes,s:":",d:seconds;HUDMSG_FADEOUT,5400+nextx,CR_ORANGE,S_TIME_X,(S_YMULT*nextx)+S_TOPY+20.0,3.0);
+					}
+				}
+				nextx++;
+				delay(1);
+			}
+		}
+		setfont("SMALLFONT");
+
+		if(i > 9) {
+			hudmessagebold(s:"\cgNext map in: \cc",d:i;HUDMSG_FADEOUT,5505,CR_WHITE,400.0,520.0,3.0);
+		} else {
+			hudmessagebold(s:"\cgNext map in: \cc0",d:i;HUDMSG_FADEOUT,5505,CR_WHITE,400.0,520.0,3.0);
+		}
+
+		delay(35 - G_GetPlayerCount());
+	}
+	delay(35);
+	exit_normal(0);
+	delay(35 * 2);
+	hudmessagebold(s:"Incase you see this message\nscript failed to exit the map, callvote to next one",d:i;HUDMSG_FADEOUT,5505,CR_WHITE,400.0,400.0,3.0);
+}
+
+#define AV_THUMP 90
+
+script 403 open //Ambience Creator script
+{
+	if(isTitlemap()) { terminate; }
+
+	while(PAGE_PICKED == 0) {
+        Delay(20);
+    }
+	
+	if(G_PAGESCOUNT == 0) {
+		ThrowException("G_MAIN","403","G_PAGESCOUNT is zero!"); terminate;
+	}
+	
+	int subhelp = 0;
+	int volume = 15;
+
+    while(PAGE_PICKED < G_PAGESCOUNT) {
+        AmbientSound("Global/Bass",volume);
+		if(volume < AV_THUMP) volume += 10;
+		volume = clamp(0,AV_THUMP,volume);
+		
+		subhelp = fixeddiv(PAGE_PICKED<<16,fixeddiv(G_PAGESCOUNT<<16,200.0)) >> 16;
+		delay(max(35 * 6 - (subhelp),10));
+    }
+	
+	 while(G_GAMEMODE == GAMEMODE_ENDLESS) { 
+		AmbientSound("Global/Bass",volume);
+		if(volume < AV_THUMP) volume += 10;
+		volume = clamp(0,AV_THUMP,volume);
+		
+		switch(PAGE_PICKED / 10) {
+			case 0: delay(35 * 8); break;
+			case 1: delay(35 * 7); break;
+			case 2: delay(35 * 6); break;
+			case 3: delay(35 * 5); break;
+			case 4: delay(35 * 4); break;
+			case 5: delay(35 * 3); break;
+			case 6: delay(35 * 2); break;
+			default: delay(35); break;
+		}
+	 }
+}
+
+script 404 open {
+	if( !TRACKER_IsEnabled() ) {
+		terminate;
+	}
+	
+	delay(TRACKER_WaitBeforeStart());
+	int mapnumber = getLevelInfo(LEVELINFO_LEVELNUM);
+	TRACKER_Server_PlayerCount(G_PLAYERCOUNT ,mapnumber);
+	TRACKER_Server_MapNumber( mapnumber );
+}
+
+/* ================= Control Scripts ================ */
+
+script 756 (int getver) net {
+	if(getver==0){
+		getver = VERSION_ID;
+	}
+	
+	str a,b,c,d,e,f,g,h;
+	if(getver == 1) {
+		print(s:"Version: 1.0.0 (R1) - Date: 19.11.2013 \nInitial Release!!");
+	} else if(getver == 2) {
+		print(s:"Version: 1.0.1 (R2) - Date: 23.11.2013 \n-Added MAP05 (with custom Music)\n-Fixed some ACS bugs");
+	} else if(getver == 3) {
+		a = "Version: 1.0.2 (R3) - Date: 29.11.2013 \n-Rewritten page spawning script\n-Fixed Script 753\n-Ghosts now have limited speed (which is still very unfair)\n-Rebalanced Gray noise";
+		b = "\n-Finished MAP05\n-Finished MAP06\n-Fixed MAP03 issue #1\n-The Girl now makes you turn to her with some delay\n-Added Changelog Command with each version";
+		c = "\n-Added new Ghost";
+		d = "";
+		print(s:a,s:b,s:c,s:d);
+	} else if(getver == 4) {
+		a = "Version: 1.0.3 (R4) - Date: 27.12.2013 \n-Added few more page spots for all maps... \n-Fixed some things in map03 (adding impasable lines and removing safe spots from ghosts)";
+		b = "\n-Improved the page spawning script to spawn pages appart from each other when G_DISTANCTION = 1";
+		c = "\n-added possibility to add custom ghost into spawn selection via function GHOST_AddGhost(name,actorname,defaultspeed,speedlimit)";
+		d = "\n-Attempted to make the cheaper gray noise effect less eye raping\n-Added hints after you die\n-Added Death text/image";
+		e = "\n-Added cvar G2_HQ which enables high quality effects (currently only torch fire)\n-New music for map02\n-Added props into maps (work in progress)";
+		f = "\n-Player's light is now 150 from 200 size\n-Ghost's speed is now based on skill you play on and player count...\n";
+		g = "-If you have coop info on, you can see ammount of pages the player has picked (it is in the ammo place)\n-Scoreboard doesn't countdown next map when you lost a game";
+		h = "\n-Added more details for maps";
+		print(s:a,s:b,s:c,s:d,s:e,s:f,s:g,s:h);
+	} else if(getver == 5) {
+		a = "Version: 2.0.0 (R5) - Date: 27.12.2014 \n-Added Clientsideonly to torches\n-Replaced laggy torches with much more cheaper effect\n-Redetailed MAP01\n-Added more details to MAP02\n";
+		b = "-Death/Kill sounds\n-Screamers/Death screens\n-New music for MAP03\n-Ambient sounds\n-Lowered the volume of the classic thumping sound\n";
+		c = "-TheGirl Code improvement, fixing her random freezing and making her more accurate\n-New slenderman sprites\n-Slenderman does less damage when you look at him from greater distance\n";
+		d = "-Slenderman Code improvement including the ability to wait for players behind corners and doors and appear more in center of room\n-Rain and Snow\n";
+		e = "-Festive mode :3\n-Cleaned up ACS\n-Added the posibility to have multiple ghosts at once\n-Improved logo!\n";
+		f = "-AMBIENT SOUNDS!!! FTW!!\nMoved MAP04 to MAP00, MAP05 to MAP04 and then Added new MAP05 and MAP06";
+		g = "";
+		h = "";
+		print(s:a,s:b,s:c,s:d,s:e,s:f,s:g,s:h);
+	}  else if(getver == 6) {
+		a = "Version: 2.0.1 (R6) - Date: 7.2.2015 \n-Fixed Three Gray Noise glitches (too much noise, not eneought fade, fade not getting changed)\n";
+		b = "-Fixed MAP03 weird broken sectors\n-Slowed down player and ghosts\n-Fixed Ghost Amount to more reasonable\n";
+		c = "-Fixed MAP01 and MAP00 ghost spawnpoints to able to spawn the skeleton ghost\n";
+		d = "-Nerfed the skeleton ghost\n-(Hopefully) Fixed MAP05 and MAP06 brightness issues\n";
+		e = "-Fixed Slenderman getting iddle\n-Fixed few tiny mistakes that weren't even noticable, yet made a difference...";
+		f = "-Fixed MAP01 Page Error warnings\n";
+		g = "-Added Simple Achievements which you carry across servers or singleplayer";
+		h = "";
+		print(s:a,s:b,s:c,s:d,s:e,s:f,s:g,s:h);
+	}  else if(getver == 7) {
+		a = "Version: 2.0.2 (R7) - Date: 11.2.2015\n";
+		b = "-Nerfed The Skeleton Ghost Again!!\n";
+		c = "-Added Fatal Error graphics icon\n";
+		d = "-Added more brightness for software renderer and spectators\n";
+		e = "-Increased the size of MAP06\n";
+		f = "-Fixed fullbright issues\n";
+		g = "-(Hopefully) fixed random gameovers\n";
+		h = "";
+		print(s:a,s:b,s:c,s:d,s:e,s:f,s:g,s:h);
+	}  else if(getver == 8) {
+		a = "Version: 2.1.0 (R8) - Date: ---\n\nUntil now each new version was made by single person...\nSo, I'd like to welcome Jason Dagenet to the development team!";
+		b = "-New sounds, New Music\n";
+		c = "-New map: Hospital (MAP07)\n-Added new Titlepic graphic\n-Minor changes to MAP01 and MAP02";
+		d = "-More maintenance related to ACS!\n-New awesome achievements!\n-Rebalanced skills\n-Hud Blood is now working even for Zandronum\n-New Titlemap\n";
+		e = "-New \"Slender\" effect!\n";
+		f = "-Upgraded Thegirl (AI and visuals)\n";
+		g = "-Removed Ghost Cam buttons and replaced them with GhostCamNext and GhostCamPrev\n";
+		h = "-Added G2_AutomaticSkill cvar to allow automatic change of skill";
+		print(s:a,s:b,s:c,s:d,s:e,s:f,s:g,s:h);
+	} else {
+		print(s:"Couldn't find what you requested");
+	}
+}
+
+function void G_DisplayBorders(int hudtype,int time) {
+	sethudsize(800,600,0);
+	setfont("EDGETOP");
+	hudmessage(s:"A";hudtype,0,CR_WHITE,400.0,0.0,time);
+	setfont("EDGEBOT");
+	hudmessage(s:"A";hudtype,0,CR_WHITE,400.0,550.0,time);
+}
+
+script 753 enter clientside 
+{
+	if(isTitlemap()) {
+		terminate;
+	}
+	
+	if(PlayerNumber() != ConsolePlayerNumber()) 
+		Terminate;
+		
+	delay(1);
+	G_DisplayBorders(HUDMSG_FADEINOUT,0.2);
+	if(getCvar("G2_Launched") > 0) {
+		if(getCvar("G2_LastVersion") < VERSION_ID) {
+			SaveCvar("G2_LastVersion",VERSION_ID);
+			
+			delay(35);
+			sethudsize(800,600,0);
+			setfont("BIGFONT");
+			hudmessagebold(s:"Welcome back to ";HUDMSG_FADEINOUT,0,CR_RED,400.0,150.0,10.0);
+			setfont("GHSTD2");
+			hudmessagebold(s:"a";HUDMSG_FADEINOUT,0,CR_RED,400.0,200.0,10.0); //180 to be close to the top text
+			delay(35 * 1);
+			setfont("CONFONT");
+			hudmessagebold(s:"type \"changelog\" into the console to see what is new!";HUDMSG_FADEINOUT,0,CR_WHITE,400.0,250.0,9.0);
+				
+			if(GetCvar("G2_LastVersion") == 6) {
+				hudmessagebold(s:"This version limits the camera locking on ghosts, fixes bugs and brings unlockable achievements!";HUDMSG_FADEINOUT,0,CR_WHITE,400.0,260.0,9.0);
+			}
+			if(GetCvar("G2_LastVersion") == 7) {
+				hudmessagebold(s:"This version adds more support for Software render users and for spectators!";HUDMSG_FADEINOUT,0,CR_WHITE,400.0,260.0,9.0);
+			}
+			if(GetCvar("G2_LastVersion") == 8) {
+				hudmessagebold(s:"This version brings new sounds, music, effects and brings ballance to the whole universe!";HUDMSG_FADEINOUT,0,CR_WHITE,400.0,260.0,9.0);
+			}
+		} else if(getCvar("G2_LastVersion") > VERSION_ID) {
+			//Degrading... wtf?
+		}
+	}
+	
+	SaveCvar("G2_LastVersion",VERSION_ID);
+	
+	if(getCvar("G2_Launched") == 0) {
+		if(ENGINE_MENUDEF == 0) {
+			saveCvar("G2_GN",2); //Ammount of noise as an eye candy
+			saveCvar("G2_GNLimiter",5);
+			saveCvar("G2_GNSight",7);
+			//saveCVar("G2_HQ",1);
+			saveCVar("G2_RAIN",1);
+			saveCVar("G2_FOG",1);
+		}
+		
+		if(GameType() != GAME_SINGLE_PLAYER) {
+			delay(TRACKER_WaitBeforeStart());
+		}
+		delay(35);
+		sethudsize(800,600,0);
+		setfont("BIGFONT");
+		hudmessagebold(s:"Welcome to ";HUDMSG_FADEINOUT,0,CR_RED,400.0,150.0,6.0);
+		setfont("GHSTD2");
+		hudmessagebold(s:"a";HUDMSG_FADEINOUT,0,CR_RED,400.0,200.0,6.0); //180 to be close to the top text
+		delay(35 * 1);
+		setfont("CONFONT");
+		hudmessagebold(s:"Your objective is to pick all pages... \n...but you are not alone in these places";HUDMSG_FADEINOUT,0,CR_WHITE,400.0,250.0,5.0);
+		saveCvar("G2_Launched",1);
+	} else {
+		saveCvar("G2_Launched",getCvar("G2_LAUNCHED")+1);
+	}
+	
+	if(GetCvar("G2_LastVersion") == 0) {
+		saveCvar("G2_GN",1); //Ammount of noise as an eye candy
+		saveCvar("G2_GNLimiter",5);
+		saveCvar("G2_GNSight",7);
+		saveCVar("G2_RAIN",1);
+		saveCVar("G2_FOG",1);
+	}
+	
+	localambientsound("Ghosted2/Intro",50);
+	
+	if(getCvar("G2_Launched") == 2147483647) {
+		printbold(s:"\cgYou have launched my mod over for 2147483647 times? Are you fucking kidding me? Woah, thank you for playing!!!!");
+		saveCvar("G2_Launched",-2147483648);
+	}
+	
+	if(getCvar("G2_Launched") == 1000) {
+		setfont("confont");
+		printbold(s:"\cgWow, you played my mod for 1000 times? Do you really like it that much... THANKS!!");
+	}
+	
+	int errors = 0;
+	int warnings = 0;
+	if(getCvar("G2_IGNORE") == 0) {
+	setfont("CONFONT");
+		if(getCvar("vid_renderer") == 0) {
+		}  else {
+			if(ENGINE_CONSOLECOMMAND && IsZandronum()) ConsoleCommand("gl_use_models 1");
+			if(ENGINE_CONSOLECOMMAND) ConsoleCommand("gl_lights 1");
+			
+			if(ENGINE_CONSOLECOMMAND) ConsoleCommand("gl_lightmode 1");
+			if(ENGINE_CONSOLECOMMAND) ConsoleCommand("gl_lights_additive 0");
+			if(ENGINE_CONSOLECOMMAND) ConsoleCommand("gl_lights_intensity 1.0");
+			
+			if(getCvar("gl_use_models") == 0 && isZandronum()) {
+				warnings++;
+				G2_PrintWarning("3D Models should be turned on, please turn them on via console: gl_use_models 1");
+			}
+			if(getCvar("gl_lights") == 0) {
+				errors++;
+				G2_PrintError("Dynamic lighting is disabled, please turn it on via console: gl_lights 1");
+			}
+			if(getCvar("gl_nogl") == 1) {
+				if(ENGINE_CONSOLECOMMAND) ConsoleCommand("gl_nogl 0");
+				errors++;
+				G2_PrintError("gl_nogl is enabled. To fix this, type into console: gl_nogl 0\nand restart the game");
+			}
+			if(getCvar("gl_lightmode") == 4) {
+				warnings++;
+				G2_PrintWarning("Please use other gl_lightmode than \"Legacy\" ");
+			}
+			if(getCvar("gl_lights_additive") > 0) {
+				errors++;
+				G2_PrintError("Additive lights are enabled, please turn them off via console: gl_lights_additive 0");
+			}
+			/*if((ENGINE_GETCVARFLOAT && getCvar("gl_lights_size") >= 1.31) || (!ENGINE_GETCVARFLOAT && getcvar("gl_lights_size") >= 2)) {
+				warnings++;
+				G2_PrintWarning(strparam(s:"Please set your dynamic light size to 1.0 (or somewhere around that value), type into console \"gl_lights_size 1.0\"",
+				s:"Please bear in mind that you are ruining your gameplay experience",
+				s:"\nLarger dynamic lights will also cause large FPS drops\n\nPlease consider changing the light size..."));
+				
+			}
+			if((ENGINE_GETCVARFLOAT && getCvar("gl_lights_intensity") >= 1.31) || (ENGINE_GETCVARFLOAT && getCvar("gl_lights_intensity") <= 0.95) || (!ENGINE_GETCVARFLOAT && getcvar("gl_lights_intensity") >= 2)) {
+				warnings++;
+				G2_PrintWarning(strparam(s:"Please set your dynamic light intensity to 1.0, type into console \"gl_lights_intensity 1.0\"",
+				s:"Please bear in mind that you are ruining your gameplay experience"));
+			}*/
+		}
+		
+		if(ENGINE_CONSOLECOMMAND) ConsoleCommand("hud_scale 0");
+		if(getCvar("hud_scale") > 0) {
+			errors++;
+			G2_PrintError("hud_scale is enabled, please disable hud_scale via console hud_scale 0");
+		}
+	}
+	
+	if(warnings > 0 || errors > 0) {
+		//G2_Print(strparam(s:"Please check console for errors and warnings!!\n(Press ",k:"toggleconsole",s:" (should be the key below escape key) also page up and page down to scroll in the console)"));
+		
+		if(ENGINE_CONSOLECOMMAND > 0) {
+			delay(35 * 2);
+			ConsoleCommand("toggleconsole");
+		}
+	}
+}
+
+
+#define HID_G2PRINT 9870
+function void G2_PrintError(int a) { setfont("confont"); sethudsize(800,600,0); hudmessage(s:"\cgError : \cc",s:a;HUDMSG_LOG,HID_G2PRINT,CR_WHITE,400.0,280.0,4.0); }
+function void G2_PrintErrorBold(int a) { setfont("confont"); sethudsize(800,600,0); hudmessagebold(s:"\cgError : \cc",s:a;HUDMSG_LOG,HID_G2PRINT,CR_WHITE,400.0,280.0,4.0); }
+function void G2_PrintWarning(int a) { setfont("confont"); sethudsize(800,600,0); hudmessage(s:"\cfWarning : \cc",s:a;HUDMSG_LOG,HID_G2PRINT,CR_WHITE,400.0,280.0,4.0); }
+function void G2_PrintWarningBold(int a) { setfont("confont"); sethudsize(800,600,0); hudmessagebold(s:"\cfWarning : \cc",s:a;HUDMSG_LOG,HID_G2PRINT,CR_WHITE,400.0,280.0,4.0); }
+function void G2_Print(int a) { setfont("confont"); sethudsize(800,600,0); hudmessage(s:a;HUDMSG_LOG,HID_G2PRINT,CR_WHITE,400.0,280.0,4.0); }
+function void G2_PrintBold(int a) { setfont("confont"); sethudsize(800,600,0); hudmessagebold(s:a;HUDMSG_LOG,HID_G2PRINT,CR_WHITE,400.0,280.0,4.0); }
+
+function int G_GetSkillName(int skillnum) {
+	switch(skillnum) {
+		case 0: return "Very Easy";
+		case 1: return "Easy";
+		case 2: return "Normal";
+		case 3: return "Hard";
+		case 4: return "Nightmare";
+	}
+	return 0;
+}
+
+/* ================= Misc Scripts ================ */
+
+#define HID_LOGO 1001
+#define HID_PAGECOUNT 1003
+#define HID_SKILLS 1002
+
+#define G_SHOWPAGES_X 0.05 //0.02
+#define G_SHOWPAGES_Y 0.99998 //0.02
+
+#define G_SHOWSKILL_X 0.12
+#define G_SHOWSKILL_Y 0.94998
+
+script 782 open
+{
+	if(isTitlemap()) {
+		terminate;
+	}
+	
+	delay(5);
+	
+	while(1) {
+		G_showLogo();
+		
+		if(GameType() == GAME_SINGLE_PLAYER) {
+			delay(5);
+		} else {
+			delay(70);
+		}
+		
+		sethudsize(0,0,0);
+		setfont("SMALLFONT");
+		if(G_GAMEMODE == GAMEMODE_NORMAL) {
+			hudmessagebold(s:"Pages: \cc",d:PAGE_PICKED,s:"/",d:G_PAGESCOUNT,s:"  \cuSkill: \cc",s:G_GetSkillName(GetSkill());HUDMSG_FADEOUT,1003,CR_BLACK,G_SHOWPAGES_X,G_SHOWPAGES_Y,5.5);
+		} else if(G_GAMEMODE == GAMEMODE_ENDLESS){
+			hudmessagebold(s:"Pages: \cc",d:PAGE_PICKED,s:"/...",s:"  \cuSkill: \cc",s:G_GetSkillName(GetSkill());HUDMSG_FADEOUT,1003,CR_BLACK,G_SHOWPAGES_X,G_SHOWPAGES_Y,5.5);
+		}
+		
+		if(GameType() == GAME_SINGLE_PLAYER) {
+			delay(5);
+		} else {
+			delay(70);
+		}
+	}
+}
+
+#define G_SHOWLOGO_X 0.9958
+#define G_SHOWLOGO_Y 0.99998
+function void G_showLogo(void) {
+	int color = CR_DARKRED;
+	str ghstd = "GHOSTED II - ";
+	str author = " - by \cnRa\cgve\cfYa\cdrd \cc& \cgJason Dagenet";
+	str port = "Doom";
+	
+	if(isZDoom()) {
+		port = "ZDoom";
+	} else if(isGZDoom()) {
+		port = "GZDoom";
+	} else if(isZandronum()) {
+		port = "Zandronum";
+	}
+	
+	setfont ("SMALLFONT");
+	hudmessagebold(s:ghstd,s:version,s:" <",s:port,s:">",s:author;HUDMSG_FADEOUT,HID_LOGO,color,G_SHOWLOGO_X,G_SHOWLOGO_Y,70.0);
+}

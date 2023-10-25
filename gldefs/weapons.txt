@@ -1,0 +1,119 @@
+
+material texture "models/weapons/flashlight/hand.png"
+{
+	normal "models/weapons/flashlight/hand_N.png" 
+	specular "models/weapons/flashlight/hand_S.png"
+	glossiness 10
+	specularlevel 5
+	
+	brightmap "models/weapons/flashlight/hand_BM.png"
+	shader "shaders/SimSun.fp"
+}
+material texture "models/weapons/flashlight/flashlight.png"
+{
+	normal "models/weapons/flashlight/flashlight_N.png" 
+	specular "models/weapons/flashlight/flashlight_S.png"
+	glossiness 1
+	specularlevel 2
+	
+	brightmap "models/weapons/flashlight/flashlight_BM.png"
+	shader "shaders/SimSun.fp"
+}
+material texture "models/weapons/flashlight/flashlight2.png"
+{
+	normal "models/weapons/flashlight/flashlight_N.png" 
+	specular "models/weapons/flashlight/flashlight_S.png"
+	glossiness 1
+	specularlevel 2
+	
+	brightmap "models/weapons/flashlight/flashlight2_BM.png"
+	shader "shaders/SimSun.fp"
+}
+material texture "models/weapons/flashlight/digit0.png"
+{
+	brightmap "models/weapons/flashlight/digit0_BM.png"
+}
+material texture "models/weapons/flashlight/digit1.png"
+{
+	brightmap "models/weapons/flashlight/digit1_BM.png"
+}
+material texture "models/weapons/flashlight/digit2.png"
+{
+	brightmap "models/weapons/flashlight/digit2_BM.png"
+}
+material texture "models/weapons/flashlight/digit3.png"
+{
+	brightmap "models/weapons/flashlight/digit3_BM.png"
+}
+material texture "models/weapons/flashlight/digit4.png"
+{
+	brightmap "models/weapons/flashlight/digit4_BM.png"
+}
+material texture "models/weapons/flashlight/digit5.png"
+{
+	brightmap "models/weapons/flashlight/digit5_BM.png"
+}
+material texture "models/weapons/flashlight/digit6.png"
+{
+	brightmap "models/weapons/flashlight/digit6_BM.png"
+}
+material texture "models/weapons/flashlight/digit7.png"
+{
+	brightmap "models/weapons/flashlight/digit7_BM.png"
+}
+material texture "models/weapons/flashlight/digit8.png"
+{
+	brightmap "models/weapons/flashlight/digit8_BM.png"
+}
+material texture "models/weapons/flashlight/digit9.png"
+{
+	brightmap "models/weapons/flashlight/digit9_BM.png"
+}
+
+material texture "models/weapons/lighter/hand.png"
+{
+	normal "models/weapons/lighter/hand_N.png" 
+	specular "models/weapons/lighter/hand_S.png"
+	glossiness 10
+	specularlevel 5
+	
+	brightmap "models/weapons/lighter/hand_BM.png"
+	shader "shaders/SimSun.fp"
+}
+material texture "models/weapons/lighter/lighter.png"
+{
+	normal "models/weapons/lighter/lighter_N.png" 
+	specular "models/weapons/lighter/lighter_S.png"
+	glossiness 5
+	specularlevel 5
+	
+	brightmap "models/weapons/lighter/lighter_BM.png"
+	shader "shaders/SimSun.fp"
+}
+material texture "models/weapons/lighter/flame.png"
+{
+	brightmap "models/weapons/lighter/flame_BM.png"
+}
+material texture "models/weapons/lighter/flame2.png"
+{
+	brightmap "models/weapons/lighter/flame2_BM.png"
+}
+material texture "models/weapons/lighter/flame3.png"
+{
+	brightmap "models/weapons/lighter/flame3_BM.png"
+}
+
+material texture "models/weapons/glowstick/hand.png"
+{
+	normal "models/weapons/glowstick/hand_N.png" 
+	specular "models/weapons/glowstick/hand_S.png"
+	glossiness 10
+	specularlevel 5
+	
+	brightmap "models/weapons/glowstick/hand_BM.png"
+	shader "shaders/SimSun.fp"
+}
+material texture "models/weapons/glowstick/glowstick.png"
+{
+	brightmap "models/weapons/glowstick/glow_BM.png"
+}

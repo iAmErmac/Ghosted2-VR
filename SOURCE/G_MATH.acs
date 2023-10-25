@@ -1,0 +1,213 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_MATH.acs - Ghosted2 + Other Functions   //
+//////////////////////////////////////////////
+#include "zcommon.acs"
+#import "G_ENGINE.acs"
+#import "G_MAIN.acs"
+#import "G_PAGES.acs"
+#import "G_TRACKER.acs"
+
+#library "G_MATH"
+
+#libdefine SIGNED_INT_MAX 0x7FFFFFFF
+
+function int GetSkill(void) { if(getcvar("G2_Skill") == 0) { return getcvar("skill"); } return clamp(0,4,getcvar("G2_Skill")-1); }
+function int clamp(int a,int b,int c) { if(a > c) return a; else if(b < c) return b; return c; }
+function int pick(int a,int b) { if(random(0,1)) return a; return b; }
+function int min(int a,int b) { if(a < b)return a;return b; }
+function int max(int a,int b) { if(a > b)return a;return b; }
+function int abs(int num) { if(num < 0) { return -num; } return num; }
+function int Fixed(int numberdecimal) { return numberdecimal << 16; }
+function int Decimal(int numberfixed) { return numberfixed << 16; }
+function int isTitlemap(void) { return gametype() == GAME_TITLE_MAP; }
+function int isSingleplayer(void) { return gametype() == GAME_SINGLE_PLAYER; }
+function int FixedPercent(int val,int pmax) { return FixedDiv(val, FixedDiv(pmax,100.0)); }
+function int Percent(int val,int pmax) { return Decimal(FixedPercent(Fixed(val), Fixed(pmax))); }
+function int manhattanDistanceFixed(int tid1,int tid2) { return abs(GetActorX(tid1) - GetActorX(tid2)) + abs(GetActorY(tid1) - GetActorY(tid2)) + abs(GetActorZ(tid1) - GetActorZ(tid2)); }
+function void FaceActor (int tid1, int tid2) { SetactorAngle(tid1,VectorAngle(getactorx(tid1) - getactorx(tid2),getactory(tid1) - getactory(tid2)) + 32768); }
+function int PlayerIsAlive(int id) { return GetActorProperty(PlayerTag(id),APROP_HEALTH) > 0; }
+
+function int FloorNum(int num) { return num & 0xFFFF0000; }
+function int LinearFunctionFixed(int x,int a,int b) { return fixedmul(x,a) + b; }
+function int LinearFunction(int x,int a,int b) { return (x*a) + b; }
+
+function int G_CalculateScore(int player) { return ((S_PAGES[player] * 12) * ((getSkill() + 3) * 50)) + (S_TIME * 3) + S_DAMAGE[player] + ((PlayerCount()) * 15); }
+function int G_GetSurvivingPlayerCount(void) { int r = 0; for(int i = 0;i < 64;i++) { if(PlayerIsAlive(i)) { r++; } } return r; } //G_PLAYERMAXWAS maybe later.. if I know it works
+function int G_ClosestPlayerToActivator(void) { int smallest = SIGNED_INT_MAX; for(int i = 0;i < G_PLAYERMAXWAS;i++) { if(PlayerIsAlive(i)) { smallest = min(distance(0,PlayerTag(i)),smallest); }	} return smallest; }
+function int G_ClosestPlayerTidToActivator(void) { int smallest = 0; int dist = SIGNED_INT_MAX; for(int i = 0;i < G_PLAYERMAXWAS;i++) {  if(PlayerIsAlive(i) && distance(0,PlayerTag(i)) < dist) {  smallest = i; dist = distance(0,PlayerTag(i)); } }  return smallest; }
+
+function void PushActorTo(int tid,int x,int y,int z,int despeed) {
+	SetActorVelocity(tid,fixedmul(-getactorx(tid) + x,despeed),fixedmul(-getactory(tid) + y,despeed),fixedmul(-getactorz(tid) + z,despeed),0,0);
+}
+//
+// ZDOOM WIKI
+function int oldsqrt(int number) //oldsqrt due to the fact that GZDOOM has sqrt function
+{
+	if(number <= 3) { if(number > 0) { return 1; } return 0; }
+	int oldAns = number >> 1,                     // initial guess
+	    newAns = (oldAns + number / oldAns) >> 1; // first iteration
+	while(newAns < oldAns) { oldAns = newAns; newAns = (oldAns + number / oldAns) >> 1; }
+	return oldAns;
+}
+// Distance - Wikipedia
+function int pow2(int a) { return a*a; }
+function int distance (int tid1, int tid2) { return oldsqrt( pow2((GetActorX(tid1) - GetActorX(tid2) >> 16)) + pow2((GetActorY(tid1) - GetActorY(tid2) >> 16)) + pow2((GetActorZ(tid1) - GetActorZ(tid2) >> 16))); }
+
+// G_GetSurvivingPlayerCount - RaveYard
+function bool TidIsReserved(int which) { if((which >= 5000 && which < 5000+64) || thingcount(0,which) > 0) { return true; } return false; }
+function bool TidIsUsed(int tid) { if(thingcount(0,tid) > 0) { return true; } return false; }
+function int G_ClosestPlayer(int to) { int closestid = 0; for(int i = 0;i < G_PLAYERMAXWAS;i++) { if( distance(PlayerTag(i),to) < distance(closestid,to) && PlayerIsAlive(i)) { closestid = i; } } return closestid; }
+
+function void saveCVar(int cvar, int val) {
+	if(ENGINE_SETCVAR == 1) {
+		SetCvar(cvar,val);
+	} else if(ENGINE_CONSOLECOMMAND == 1) {
+		//Credit goes ... to someone.. if you recognise your code plz tell me..
+		int query = StrParam(s: "set " , s:cvar, s: " ", d:val);
+		int query2 = StrParam(s: "archivecvar ", s:cvar);
+		ConsoleCommand(query); ConsoleCommand(query2);
+	} else {
+		ThrowException("G_MATH","SaveCVAR","Engine doesn't support any methods of saving CVARS");
+	}
+}
+
+function void saveTempCVar(int cvar,int val) { //Same as before but doesn't archive it...
+	if(ENGINE_SETCVAR == 1) {
+		SetCvar(cvar,val);
+	} else if(ENGINE_CONSOLECOMMAND == 1) {
+		ConsoleCommand(StrParam(s: "set " , s:cvar, s: " ", d:val));
+	} else {
+		ThrowException("G_MATH","SaveTempCVAR","Engine doesn't support any methods of saving CVARS");
+	}
+}
+
+function void setInventory (str name,int amount) {
+	int val = checkInventory(name);
+	if(val > amount) {
+		takeInventory(name,val-amount);
+	} else if(val < amount) {
+		giveInventory(name,amount-val);
+	}
+}
+
+function int Interpolate(int from,int to,int slowed) {
+	return from + fixedmul(slowed,to - from);
+}
+
+function int Condition(int value,int a,int b){
+	if(value) return a; return b;
+}
+
+
+function int G_ClientCallServerScript(int snum,int arg1,int arg2,int arg3) {
+	if(ENGINE_CONSOLECOMMAND) {
+		ConsoleCommand(strparam(s:"puke ",d:snum,s:" ",d:arg1,s:" ",d:arg2,s:" ",d:arg3)); return 0; 
+	}
+	return RequestScriptPuke(snum,arg1,arg2,arg3);
+}
+
+#define G_TIPSCOUNT 17
+str G_TIP[G_TIPSCOUNT] = { 	//Determine if to use helpfull tips or just silly ones
+	"Performance drops when hurt? Type into console \"set G2_GNLimiter 3\" ",
+	"Everything looks white? Try disabling additive lighting, or maybe enabling textures...",
+	"Slenderman and The Girl can wait behind corners and doors... so beware",
+	"Type changelog into console to see latest changes...",
+	"Heard doors open? Are you sure it is your friend who is just around the corner?",
+
+	"There is a button to watch thru eyes of ghosts, go to customize controls to set it up...",
+	"The more pages you get, the better are the ghosts",
+	"Turning off the flashling doesn't do anything... yet",
+	"Hugging ghosts isn't common amongs players, but it results in deaths full of happiness",
+	"Lights flicker and break in presence of supernatural powers... in another words, flickering light means danger.",
+	
+	"Pages are usually located in corners of all rooms, however they can be in middle of large rooms.",
+	"Don't look at ghosts when they are hurting you. That way you will probably get slaughtered faster...",
+	"Too much trouble with ghosts forcing your vision towards them? Try running backwards...",
+	"Skeleton is the fastest ghost, however if you look at him while he is running, he will slow down...",
+	"Pay attention to sounds around you... it will really help you..",
+	
+	"Try avoiding encounters with ghosts, it is one of the basic rules of survival here...",
+	"The Girl presence turns off power to the lights near her, but the lights will come back online in a while..."
+};
+
+function void G_ShowRandomTip(void) {
+	sethudsize(800,600,0); setfont("CONFONT");
+	hudmessage(s:"HINT: ",s:G_TIP[random(0,G_TIPSCOUNT-1)];HUDMSG_TYPEON,0,CR_GRAY,400.0,500.0,12.0);
+}
+
+//My custom function for aproximate velocity
+function int GetQuickVelocityXY(int tid) { return FixedDiv(abs(getactorvelx(tid)) + abs(getactorvely(tid)), 0.75); }
+function int GetQuickVelocityXYZ(int tid) { return FixedDiv(abs(getactorvelx(tid)) + abs(getactorvely(tid)) + abs(getactorvelz(tid)), 0.75); }
+
+
+ /* ANGLE FUNCTIONS BY RAVEYARD */
+ 
+#define TWOBYTES 65536
+#define HALFTWOBYTES TWOBYTES / 2
+
+function int angle_TurnTo(int from,int to,int by) {
+	if(angle_diff(from,to) < by) { 
+		return to;
+	} else if(angle_diffleft(from,to) < angle_diffright(from,to)) {
+		return angle_TurnLeft(from,by);
+	}
+	return angle_TurnRight(from,by);
+}
+
+function int angle_Add(int a,int b) { return angle_fix(a+b); }
+function int angle_Sub(int a,int b) { return angle_fix(a-b); }
+function int angle_Mul(int a,int b) { return angle_fix(a*b); }
+function int angle_Div(int a,int b) { return angle_fix(a/b); }
+
+function int angle_fix(int a) {
+    if(a < 0)return a+TWOBYTES;
+    if(a >= TWOBYTES)return a-TWOBYTES;
+    return a;    
+}
+
+function int angle_Diff(int a,int b) {
+    if(abs(a - b) > HALFTWOBYTES) { return HALFTWOBYTES - (abs(a - b) - HALFTWOBYTES); }
+    return abs(a - b);
+}
+
+function int angle_DiffRight(int a,int b) {
+    if(a - b > 0) { return a - b; }
+    return a - b + TWOBYTES;
+}
+
+function int angle_DiffLeft(int a,int b) {
+    if(b - a > 0) { return b - a; }
+    return b - a + TWOBYTES;
+}
+
+function int angle_TurnRight(int a,int ammount) { return angle_sub(a,ammount); }
+function int angle_TurnLeft(int a,int ammount) { return angle_add(a,ammount); }
+
+function int angle_Interpolate(int a,int b,int divider) {
+    int newangle = fixeddiv(angle_diff(a,b),divider);
+    if( angle_DiffLeft(a,b) > angle_DiffRight(a,b) ) {
+       newangle = angle_TurnRight(a,newangle);
+    } else if(angle_DiffLeft(a,b) < angle_DiffRight(a,b)){
+       newangle = angle_TurnLeft(a,newangle);
+    }
+    return newangle;
+}
+
+function int pitch_Interpolate(int a,int b,int divider) {
+    int newpitch = b - a;
+    newpitch = fixedDiv(newpitch,divider);
+    return newpitch+a;
+}
+
+// Extra functions
+
+function void ThrowException(str where,str func,str reason) { 
+	printbold(s:"\cg",s:where,s:"::",s:func,s:"  \ccINFO:",s:reason);
+	TRACKER_EXCEPTIONS++;
+}
+
+//from ZDOOM WIKI
+function int GetTargetAngle (int tid1, int tid2) { return VectorAngle(GetActorX(tid2) - GetActorX(tid1), GetActorY(tid2) - GetActorY(tid1)); }

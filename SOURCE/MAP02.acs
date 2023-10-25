@@ -1,0 +1,90 @@
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_PAGES.acs"
+#import "G_MATH.acs"
+#import "G_TRACKER.acs"
+#import "G_GHOST.acs"
+#import "G_PLAYER.acs"
+#import "G_SIGHT.acs"
+#import "G_ENGINE.acs"
+#import "G_LIGHTS.acs"
+#import "G_MOD.acs"
+#import "G_NOISE.acs"
+#import "G_AI.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_SNOISE.acs"
+
+#library "MAP02"
+
+script 999 open
+{
+    G_PAGESCOUNT = 8;
+    G_PAGEMINSPOT = 400;
+    G_PAGEMAXSPOT = 439;
+    G_GHOSTTAG = 1350;
+    
+    G_GHOSTMIN = 9000;
+    G_GHOSTMAX = 9003;
+    LIGHTS_BREAKBYPAGE = 15;
+}
+
+script 995 open
+{
+    while(PAGE_PICKED == 0) {
+        delay(35);
+    }
+    SetLineBlocking(1,BLOCK_EVERYTHING);
+}
+
+//The Moon slowly comes into existence...
+script 636 OPEN
+{
+	int moonStartAlpha = 0;
+	int moonFinalAlpha = Random (24, 64);
+	int moonWhatLine = Random (12, 19);
+
+	WHILE (moonStartAlpha < moonFinalAlpha)
+	{
+		TranslucentLine (moonWhatLine, moonStartAlpha, 0);
+		moonStartAlpha++;
+		
+		Delay (35*6);
+	}
+}
+
+script 2 enter
+{
+    if(PlayerNumber() > 31) {
+        delay(35);
+        Teleport(playerNumber() - 31 + 1001,0,1);
+     } else {
+        Teleport(playerNumber() + 1001,0,1);
+    }
+    delay(10);
+}
+script 3 respawn
+{
+    ACS_ExecuteAlways(2,0,0,0,0);
+}
+
+
+int eight = 0;
+
+script 4 (void) {
+    localambientsound("countdown_eight",127);
+    ambientsound("countdown_eight",127);
+
+	ACS_ExecuteAlways(5,0,0,0,0);
+	
+    setfont("confont");
+    eight++;
+    delay(36);
+}
+
+script 5 (void) clientside {
+	if(PlayerNumber() != ConsolePlayerNumber()) {
+		terminate;
+	}
+	Achievement_Award(20);
+}

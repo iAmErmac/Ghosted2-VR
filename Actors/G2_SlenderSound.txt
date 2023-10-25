@@ -1,0 +1,198 @@
+actor G2_SlenderSoundBase {
+	+NOSECTOR
+	+CLIENTSIDEONLY
+	+NOBLOCKMAP
+	+NOCLIP
+	+NOGRAVITY
+	+NOTIMEFREEZE
+	+THRUACTORS
+	height 2
+	radius 2 //Evil
+
+	States {
+		Idle:
+			//TNT1 A -1
+			MISL A -1 bright
+			loop
+	}
+}
+
+actor G2_Slendersound1 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted1","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound2 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted2","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound3 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted3","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound4 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted4","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound5 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted5","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound6 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted6","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound7 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted7","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound8 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted8","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound9 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted9","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound10 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted10","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound11 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted11","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound12 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted12","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound13 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted13","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound14 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted14","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound15 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted15","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound16 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted16","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound17 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted17","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound18 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted18","soundslot7",1,0)
+			goto Idle
+	}
+}
+/* //Whoops! Made too many :D
+actor G2_Slendersound19 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted19","soundslot7",1,0)
+			goto Idle
+	}
+}
+
+actor G2_Slendersound20 : G2_SlenderSoundBase {
+	States {
+		Spawn:
+			TNT1 A 35
+			TNT1 A 1 A_PlaySoundEx("Slenderman/Distorted20","soundslot7",1,0)
+			goto Idle
+	}
+}*/

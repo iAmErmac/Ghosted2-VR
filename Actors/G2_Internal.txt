@@ -1,0 +1,57 @@
+/*
+* Ghosted 2 Actors
+*
+* File: G2_Interal
+*
+* Description: Inventory which is used internally in ACS or for other various purposes
+*/
+
+actor G2_PickedPages : Inventory { //BE MORE USED PLZ
+	Inventory.Amount 1
+	Inventory.MaxAmount 9999
+}
+
+actor G2_Festive : Inventory {
+	Inventory.Amount 1
+	Inventory.MaxAmount 1
+}
+
+actor G2_SawGhost : Inventory {
+	Inventory.Amount 1
+	Inventory.MaxAmount 1
+}
+
+actor G2_Glitching : Inventory {
+	Inventory.Amount 1
+	Inventory.MaxAmount 200
+}
+
+actor G2_EmptyBattery : Inventory {
+	Inventory.Amount 1
+	Inventory.MaxAmount 1
+}
+
+actor G2_LQLow : Inventory {
+	Inventory.Amount 1
+	Inventory.MaxAmount 1
+}
+
+actor G2_TheNightSoul : Inventory {
+	Inventory.Amount 1
+	Inventory.MaxAmount 6
+}
+
+actor G2_GhostBuster : Inventory {
+	Inventory.Amount 1
+	Inventory.MaxAmount 1
+}
+
+actor G2_LightBreaker : Inventory {
+	Inventory.Amount 1
+	Inventory.MaxAmount 1
+}
+
+actor G2_UseSNSound : Inventory {
+	Inventory.Amount 1
+	Inventory.MaxAmount 100
+}

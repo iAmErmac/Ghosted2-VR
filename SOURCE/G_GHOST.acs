@@ -1,0 +1,344 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_GHOST.acs - Complete Ghost Manager      //
+//////////////////////////////////////////////
+#include "zcommon.acs"
+#import "G_MAIN.acs"
+#import "G_SIGHT.acs"
+#import "G_MATH.acs"
+#import "G_ENGINE.acs"
+#import "G_PAGES.acs"
+#import "G_PLAYER.acs"
+
+#library "G_GHOST"
+
+#define GG_SIZE 10
+#define GG_PARAREL 10
+
+#define GHOST_DEBUG 0
+
+str GHOSTNAMES[GG_SIZE];
+str GHOSTACTORS[GG_SIZE];
+str GHOSTKILLSOUND[GG_SIZE];
+int GHOSTSPEED[GG_SIZE];
+int GHOSTSPEEDLIMIT[GG_SIZE];
+int GHOSTFACER[GG_SIZE];
+int GHOSTNODAMAGE[GG_SIZE];
+int GHOSTSIGHTHURT[GG_SIZE];
+int GHOSTFACEDELAY[GG_SIZE];
+int GHOSTKILLFACE[GG_SIZE];
+int GHOSTDAMAGER[GG_SIZE];
+
+int GHOSTSIGHTSOUND[GG_SIZE];
+int GHOSTSIGHTSNDDELAY[GG_SIZE];
+int GHOSTSIGHTSNDDIST[GG_SIZE];
+
+int GHOSTKILLSOUNDDELAY = 0;
+
+int GHOSTSCREAMDELAY[GG_SIZE];
+int GHOSTSCREAMSOUND[GG_SIZE];
+
+int GHOSTSPAWNTIME[GG_SIZE];
+int GHOSTCOUNT = 0;
+
+function int GHOST_GetEmpty(void) { for(int i = 0;i < GG_SIZE;i++) { if(GHOSTNAMES[i]==0) { return i;} } return -1;}
+function str GHOST_GetKillSound(int ghosttype) { return GHOSTKILLSOUND[ghosttype]; }
+
+function int GHOST_AddGhost(str name,str actor,int speed,int limit) {
+	int index = GHOST_GetEmpty();
+	if(index == -1) {
+		ThrowException("G_GHOST","GHOST_AddGhost","Couldn't add ghost, no empty index found");
+	} else {
+		GHOSTNAMES[index] = name;
+		GHOSTACTORS[index] = actor;
+		GHOSTSPEED[index] = speed;
+		GHOSTSPEEDLIMIT[index] = limit;
+	}
+	return index;
+}
+
+function int GHOST_SetGhostAtributes(int index,int facer,int nodamage,int damagesight,int facerdelay) { GHOSTFACER[index] = facer;GHOSTNODAMAGE[index] = nodamage;GHOSTSIGHTHURT[index] = damagesight;GHOSTFACEDELAY[index] = facerdelay;return index; }
+function int GHOST_SetGhostCloseSound(int index,str soundname,int redelay) { GHOSTSCREAMDELAY[index] = redelay;GHOSTSCREAMSOUND[index] = soundname;return index; }
+function int GHOST_SetGhostKillSound(int index,str a) { GHOSTKILLSOUND[index] = a; return index;}
+function int GHOST_SetGhostSightSound(int index,str soundname,int dis,int redelay) { GHOSTSIGHTSOUND[index] = soundname;GHOSTSIGHTSNDDELAY[index] = redelay;GHOSTSIGHTSNDDIST[index] = dis;return index; }
+
+//TODO, fix the velocity LIMITS?
+function int GHOST_AddSlenderman(void) {
+	int index = GHOST_AddGhost("Slenderman","Slenderman",1,15.0);
+	GHOST_SetGhostAtributes(index,1,0,1,5);
+	GHOST_SetGhostSightSound(index,"Slenderman/Stinger",500,120);
+	GHOST_SetGhostCloseSound(index,"NONE",25);
+	GHOST_SetGhostKillSound(index,"Slenderman/Kill");
+	GHOSTKILLFACE[index] = "SLNDR";
+	return index;
+}
+
+function int GHOST_AddTheGirl(void) {
+	int index = GHOST_AddGhost("The Girl","TheGirl",4,20.0);
+	GHOST_SetGhostAtributes(index,1,0,0,10);
+	GHOST_SetGhostSightSound(index,"NONE",500,150);
+	GHOST_SetGhostCloseSound(index,"Girl/Boo",25);
+	GHOST_SetGhostKillSound(index,"Girl/Kill");
+	GHOSTKILLFACE[index] = "GRLF";
+	return index;
+}
+/*
+function int GHOST_AddSkull(void) {
+	int index = GHOST_AddGhost("Skull","Skull",7,7.0);
+	GHOST_SetGhostAtributes(index,1,0,0,30);
+	GHOST_SetGhostSightSound(index,"NONE",0,0);
+	GHOST_SetGhostCloseSound(index,"NONE",12);
+	GHOST_SetGhostKillSound(index,"Skull/Kill");
+	GHOSTKILLFACE[index] = "SKLLF"; //Originaly "null" because it will not do any
+	return index;
+}
+*/
+function int GHOST_AddSkeleton(void) {
+	int index = GHOST_AddGhost("The Skeleton","Skeleton",8,70.0);
+	GHOST_SetGhostAtributes(index,1,0,0,5);
+	GHOST_SetGhostSightSound(index,"NONE",0,0);
+	GHOST_SetGhostCloseSound(index,"Man/Enraged",12);
+	GHOST_SetGhostKillSound(index,"Skull/Kill");
+	GHOSTDAMAGER[index] = 3; //Damn deadly!!!!!!
+	GHOSTKILLFACE[index] = "SKLLF"; //Originaly "null" because it will not do any
+	return index;
+}
+
+function int GHOST_Spawn(int typeindex,int index) {
+	spawnspot(GHOSTACTORS[typeindex],G_GHOSTSPAWNTAG,GhostTag(index),0);
+	Thing_SetSpecial(G_GHOSTTAG + index,0,index,index,index); //Tell which Index the ghost should have
+	GHOSTSPAWNTIME[index] = timer();
+	if(ThingCount(0,G_GHOSTTAG + index) > 0) {
+		GHOSTCOUNT++; G_GHOSTSPAWNED[index] = typeindex;
+		return 1;
+	}
+	return 0;
+}
+
+function void GHOST_Despawn(int index) { if(ThingCount(0,GhostTag(index)) > 0) GHOSTCOUNT--; G_GHOSTSPAWNEDOLD[index] = G_GHOSTSPAWNED[index];  G_GHOSTSPAWNED[index] = -1; if(SetActorState(G_GHOSTTAG+index,"Banish",1) <= 0)Thing_Remove(G_GHOSTTAG + index); }
+function int GhostTag(int index) { return G_GHOSTTAG + index; }
+function void GHOST_ClearSpawnedGhostTypes(void) { for(int i = 0;i < GG_PARAREL;i++) { G_GHOSTSPAWNED[i] = -1; G_GHOSTSPAWNEDOLD[i] = -1; } }
+
+script 650 open
+{
+	GHOST_ClearSpawnedGhostTypes();
+	delay(1);
+	
+	GHOST_AddSlenderman();
+	delay(1);
+	GHOST_AddTheGirl();
+	delay(1);
+	GHOST_AddSkeleton();
+	delay(1);
+}
+
+function int GHOST_GetRandomGhostType (int ignoretype) {
+	int r = random(0,GHOST_GetEmpty()-1);
+	if(getCvar("G2_OverrideGhost") != 0) {
+		r = getCvar("G2_OverrideGhost") - 1;
+	} else if(ignoretype == r) {
+		if(random(0,1)) {
+			r++;
+			r = r % (GHOST_GetEmpty());
+		} else {
+			r--;
+			if(r < 0) r += GHOST_GetEmpty();
+		}
+	}
+	return r;
+}
+
+function int GHOST_Count(void) { int count = 0; for(int i = 0;i < GG_PARAREL;i++) if(GHOST_IsSpawned(i)) count++; return count; }
+
+function void GHOST_SetTarget(int whom) { //TODO improve the AI
+	int bestpageplayer = PAGE_BestLivingPlayer();
+	if(GHOSTCOUNT > 0 && whom > 0) {
+		int another = G_ClosestPlayerTidToActivator();
+		if(bestpageplayer != another) { Thing_Hate(GhostTag(whom),PlayerTag(another)); } 
+		else { Thing_Hate(GhostTag(whom),PlayerTag(another + 1)); }
+	}
+	
+	if(getActorProperty(PlayerTag(bestpageplayer),APROP_HEALTH) > 0) Thing_Hate(GhostTag(whom),PlayerTag(bestpageplayer),0);
+}
+
+function int GHOST_CalculateSpeed(int r,int defaultspeed) {
+	//int defaultspeed = 4;
+	/*int speedlimit = GHOSTSPEEDLIMIT[r];
+	int additionaltimespeed = (((timer()-S_STARTTIME)/35)/60);
+	int speed = (additionaltimespeed + (defaultspeed + FixedMul(0.25,(PAGE_PICKED + PlayerCount() + getSkill()) << 16) )) / 2;
+	if(speed > speedlimit && speedlimit > 0) {
+		speed = speedlimit;
+	}*/
+	
+	defaultspeed = GHOSTSPEED[r];
+	
+	int speedlimit = GHOSTSPEEDLIMIT[r];
+	int additionaltimespeed = fixeddiv(((timer()-S_STARTTIME)/35)<<16,220.0);
+	int speed = additionaltimespeed + (defaultspeed << 16);
+	
+	int pagesbonus = 0;
+	if(G_GAMEMODE == GAMEMODE_ENDLESS) {
+		pagesbonus = fixeddiv(clamp(0,50,PAGE_PICKED)<<16,50.0);
+	} else {
+		pagesbonus = fixeddiv(PAGE_PICKED<<16,(G_PAGESCOUNT-1)<<16);
+	}
+	
+	
+	//speed += fixedmul(pagesbonus,fixedmul(fixedmul(0.15,getskill()<<16),abs(speed - speedlimit)));
+	//speed += FixedMul(0.05+fixedmul(0.05,getskill()<<16),(PlayerCount()-1) << 16);
+	
+	//speed += Fixedmul(pagesbonus,4.0 + fixedmul(1.5,getskill()<<16)); // % of pages picked
+	//speed += FixedMul(0.1+fixedmul(0.1,getskill()<<16),(PlayerCount()-1) << 16); // Player count
+	//speed += fixedmul(0.5,getskill()<<16); // skill
+	//speed += fixedmul(defaultspeed<<16,fixedmul(0.25,speed));
+	
+	speed += FixedMul(1.5 + FixedMul(getSkill() << 16,0.1),fixedmul(pagesbonus,8.0));
+	speed += FixedMul(0.9,(PlayerCount()-1) << 16);
+	speed += FixedMul(1.8,getSkill() << 16);
+	//log(f:pagesbonus);
+	
+	
+	if(speed > speedlimit && speedlimit > 0) {
+		if(getcvar("g2_debugghostspeed") > 0)
+			log(d:r,s:" == ",f:speed,s:" max == ",f:speedlimit);
+		
+		return speedlimit;
+	}
+	
+	if(getcvar("g2_debugghostspeed") > 0)
+		log(d:r,s:" == ",f:speed);
+	
+	return speed;
+}
+
+
+int GHOST_TARGET[GG_PARAREL];
+
+function int G_PlayersInRadius(int to,int radius) {
+	int p = 0, prevdist = SIGNED_INT_MAX;
+	for(int i = 0;i < G_PLAYERMAXWAS;i++) {
+		if(GetActorProperty(PlayerTag(i),APROP_HEALTH) > 0) {
+			if(distance(to,PlayerTag(i)) <= radius) {
+				p++; prevdist = distance(to,PlayerTag(i));
+			}
+		}
+	}
+	return p;
+}
+
+function int G_LoniestPlayer(int radiuspersquad) {
+	int p = 0, prevdist = SIGNED_INT_MAX;
+	for(int i = 0;i < G_PLAYERMAXWAS;i++) {
+		if(GetActorProperty(PlayerTag(i),APROP_HEALTH) > 0) {
+			for(int u = 0; u < G_PLAYERMAXWAS; u++) {
+				int rad = G_PlayersInRadius(i,radiuspersquad);
+				if(rad < prevdist) { p = i; prevdist = rad; }
+			}
+		}
+	}
+	return p;
+}
+
+function int G_CloseHurtPlayer(int to,int healthtreshold) {
+	int p = 0, prevdist = SIGNED_INT_MAX;
+	for(int i = 0;i < G_PLAYERMAXWAS;i++) {
+		if(GetActorProperty(PlayerTag(i),APROP_HEALTH) > 0 && GetActorProperty(PlayerTag(i),APROP_HEALTH) < healthtreshold) {
+			if(distance(to,PlayerTag(i)) < prevdist) {
+				p = i; prevdist = distance(to,PlayerTag(i));
+			}
+		}
+	}
+	return p;
+}
+
+function int GHOST_IsSpawned (int index) { return thingcount(0,GhostTag(index)) > 0; }
+function int GHOST_SpawnedCount(void) { return GHOSTCOUNT; }
+function int GHOST_TeleportTo(int index,int to) { TeleportOther(GhostTag(index),to,0); return manhattanDistanceFixed(GhostTag(index),to) < 100.0; }
+function int GHOST_Type(int index) { return G_GHOSTSPAWNED[index]; }
+
+function int GHOST_ClosestByType(int c,int type) {
+	int prevdist = 32000.0;
+	int previd = -1;
+	for(int i = 0;i < GG_PARAREL;i++) {
+		if(manhattanDistanceFixed(c,GhostTag(i)) < prevdist && Ghost_Type(i) == type) {
+			previd = i;
+			prevdist = manhattanDistanceFixed(c,GhostTag(i));
+		}
+	}
+	return previd;
+}
+
+function int GHOST_TypeCount(int type) {
+	int count = 0;
+	for(int i = 0;i < GG_PARAREL;i++) {
+		if(G_GHOSTSPAWNED[i] == type && thingcount(0,GhostTag(i)) > 0) {
+			count++;
+		}
+	}
+	return count;
+}
+
+
+function int G_ClosestGhost(int to) {
+	int prevdist = 32000.0;
+	int previd = -1;
+	for(int i = 0;i < GG_PARAREL;i++) {
+		if(GHOST_IsSpawned(i) && manhattanDistanceFixed(to,GhostTag(i)) < prevdist) {
+			previd = i;
+			prevdist = manhattanDistanceFixed(to,GhostTag(i));
+		}
+	}
+	return previd;
+}
+
+function int G_ClosestGhostToGhost(int to,int ignore) {
+	int prevdist = 32000.0;
+	int previd = -1;
+	for(int i = 0;i < GG_PARAREL;i++) {
+		if(GHOST_IsSpawned(ignore) && ignore == i) continue;
+		if(GHOST_IsSpawned(i) && manhattanDistanceFixed(to,GhostTag(i)) < prevdist) {
+			previd = i;
+			prevdist = manhattanDistanceFixed(to,GhostTag(i));
+		}
+	}
+	return previd;
+}
+script 600 (int arg) { //Smallest distance between closest player
+	SetResultValue(G_ClosestPlayerToActivator());
+}
+
+script 601 (void) {
+	SetResultValue(PAGE_PICKED + (G_GetSurvivingPlayerCount() / 2) + (GetCVar( "skill" ) ));
+}
+
+script 602 (int which,int index) { //is sighting me?
+	int amount = 0;
+	for(int i = 0;i < 64;i++) {
+		if(which == 0) {
+			amount += G_PlayerSeesGhost(i,index);
+		} else if(which == 1) {
+			amount += G_PlayerSeesSomething(i);
+		} else {
+			//ammount += SIGHT_STALKER[i];
+		}
+	}
+	setResultValue(amount);
+}
+
+script 603 (void) {
+	Player_FootStep(60);
+}
+
+#define DETECTOR_ANGLEMAX 1.045
+#define DETECTOR_DISTF 4200.0
+#define DETECTOR_DIST 4200
+ 
+script 605 (void) {
+	int velocityplayers = 0,velocityghosts = 0;
+	//printbold(f:angle_Diff(GetTargetAngle(0,PlayerTag(1)),GetActorAngle(0)));
+	for(int vi = 0;vi < 64;vi++) { if(PlayerIsAlive(vi) && vi != PlayerNumber() && manhattanDistanceFixed(0,PlayerTag(vi)) <DETECTOR_DISTF && angle_Diff(GetTargetAngle(0,PlayerTag(vi)),GetActorAngle(0)) < DETECTOR_ANGLEMAX) { velocityplayers += FixedMul(1.5,GetQuickVelocityXYZ(PlayerTag(vi))) >> 16; } }
+	for(int gi = 0;gi < GG_PARAREL;gi++) { if(GHOST_IsSpawned(gi)) { if(manhattanDistanceFixed(0,GhostTag(gi)) < DETECTOR_DISTF && angle_Diff(GetTargetAngle(0,GhostTag(gi)),GetActorAngle(0)) < DETECTOR_ANGLEMAX) { velocityghosts += (DETECTOR_DIST-(manhattanDistanceFixed(0,GhostTag(gi))>>16)) / 150; } } }
+	setInventory("G2_MovementDetector_Movement",velocityghosts + velocityplayers);
+}

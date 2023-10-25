@@ -1,0 +1,35 @@
+
+Model GlowStick
+{ 
+	Path "models/weapons/glowstick"
+	Model 0 "glowstick.md3"
+	Skin 0 "glowstick.png"
+	Model 1 "glowstick_hand.md3"
+	Skin 1 "hand.png"
+	Scale -0.7 0.7 0.7
+	Offset 3.0 -20 -7.0
+	
+	NOINTERPOLATION
+
+	//Ready
+	FrameIndex GSTG A 0 0	FrameIndex GSTG A 1 0
+}
+Model GlowStick
+{ 
+	Path "models/weapons/glowstick"
+	Model 0 "glowstick.md3"
+	Skin 0 "glowstick.png"
+	Model 1 "glowstick_hand.md3"
+	Skin 1 "hand.png"
+	Scale -0.7 0.7 0.7
+	Offset 3.0 -20 -7.0
+
+	//Throw
+	FrameIndex GSTG B 0 1	FrameIndex GSTG B 1 1
+	FrameIndex GSTG C 0 2	FrameIndex GSTG C 1 2
+	FrameIndex GSTG D 0 3	FrameIndex GSTG D 1 3
+	FrameIndex GSTG E 0 4	FrameIndex GSTG E 1 4
+	FrameIndex GSTG F 0 5	FrameIndex GSTG F 1 5
+	FrameIndex GSTG G 0 6	FrameIndex GSTG G 1 6
+	FrameIndex GSTG H 0 7	FrameIndex GSTG H 1 7
+}

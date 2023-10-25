@@ -1,0 +1,165 @@
+LISTMENU "MainMenu"
+{
+	Font "BigFont", "Untranslated"
+	Selector "M_SKULL1", -32, -5
+	Linespacing 16
+	Font "BigFont", "Red"
+	
+	IfGame(Doom, Chex)
+	{
+		StaticPatch 94, 2, "M_DOOM"
+		Position 97, 72
+		Position 97, 64
+	}
+
+	PatchItem "M_NGAME", "n", "PlayerclassMenu"
+	PatchItem "M_MOPT", "m", "GOptionsMenu"
+	
+	ifOption(SwapMenu)
+	{
+			PatchItem "M_LOADG", "l", "LoadGameMenu"
+			PatchItem "M_SAVEG", "s", "SaveGameMenu"
+			PatchItem "M_OPTION","o", "OptionsMenu"
+	}
+	else
+	{
+			
+			PatchItem "M_OPTION","o", "OptionsMenu"
+			PatchItem "M_LOADG", "l", "LoadGameMenu"
+			PatchItem "M_SAVEG", "s", "SaveGameMenu"
+	}
+	PatchItem "M_QUITG", "q", "QuitMenu"
+}
+
+OptionMenu "GOptionsMenu"
+{
+	Title "Ghosted II Options"
+	StaticText " "
+	StaticText "Gameplay", 1
+	Submenu "Gameplay modifier", "GhostedGameplay"
+	StaticText " "
+	StaticText "Visuals ", 1
+	Submenu "Gray noise", "GhostedNoise"
+	Submenu "Effects", "GhostedEffects"
+	StaticText " "
+	StaticText "Advanced", 1
+	Submenu "Sourceport features", "SourceportSettings"
+}
+
+OptionMenu "GhostedNoise"
+{
+	Title "Gray noise"
+
+	Slider "Limit",				"G2_GNLIMITER", 2, 75, 1
+	//Slider "Extra noise",	"G2_GN", 0, 5, 1
+	Slider "Remove extra noise when seeing ghost",	"G2_GNSight", 1, 7, 1
+	
+	StaticText " "
+	StaticText "Decreasing the limit recudes"	
+	StaticText "lag when hurt or seeing ghost"	
+	
+}
+
+OptionMenu "GhostedGameplay"
+{
+	Title "Gameplay modifier"
+	StaticText " "
+	Option "Gamemode", "G2_GAMEMODE", "GhostedGamemode"	
+	StaticText " "
+	StaticText "Pages",1
+	Slider "Force page count to ", "G2_PageCount", 0, 50, 1
+	Slider "Additional page per each X player", "G2_PageAdder", 0, 16, 1
+	Slider "How many additional pages?", "G2_PageAdderCount", 1, 16, 1
+
+	StaticText " "
+	StaticText "Ghosts",1
+	Slider "Force ghost count to ", "G2_GhostCount", 0, 10, 1
+	StaticText " "
+	StaticText "Extra",1
+	Option "Allow Ghost Camera", "G2_GHOSTCAM", onoff
+}
+
+OptionMenu "GhostedEffects"
+{
+	Title "Effects"
+	Option "Enable Rain", "G2_RAIN", onoff
+	Option "Enable Fog Particles", "G2_FOG", onoff
+	Slider "Force Lower Quality Flashlight after X players connected", "G2_CheapFlashlight", 0,8,1
+}
+
+OptionMenu "SourceportSettings" 
+{
+	Title "Engine settings"
+	
+	Option "Source Port", "ENGINE_Sourceport", "EngineSourcePort"
+	StaticText " "
+	StaticText "is the feature in the sourceport?"
+
+	Option "Console Command", "ENGINE_ConsoleCommand", "EngineFeatures"
+	Option "SetCvar", "ENGINE_SetCvar", "EngineFeatures"
+	Option "Survival Gamemode", "ENGINE_Survival", "EngineFeatures"
+	Option "Desynchronized clientside scripts", "ENGINE_DesyncAcs", "EngineFeatures"
+	Option "Upgraded Hudmessage Extensions", "ENGINE_HudmsgUpgrade", "EngineFeatures"
+
+}
+
+OptionValue "GhostedGamemode"
+{
+	0, "Classic"
+	1, "Endless Terror"
+}
+
+OptionValue "EngineSourcePort"
+{
+	0, "Keep default"
+	1, "ZDOOM"
+	2, "GZDOOM"
+	3, "ZANDRONUM"
+}
+
+OptionValue "EngineFeatures"
+{
+	-1, "No"
+	0, "Autodetect"
+	1, "Yes"
+}
+
+
+OptionMenu "CustomizeControls"
+{
+	Title "CUSTOMIZE CONTROLS"
+	ScrollTop 2
+	StaticTextSwitchable 	"ENTER to change, BACKSPACE to clear", "Press new key for control, ESC to cancel", "ControlMessage"
+	StaticText 	""
+	StaticText 	"Controls", 1
+	Control 	"Primary Attack",		"+attack"
+	//Control 	"Secondary Fire",		"+altattack"
+	Control 	"Use / Open",			"+use"
+	Control 	"Move forward",			"+forward"
+	Control 	"Move backward",		"+back"
+	Control 	"Strafe left",			"+moveleft"
+	Control 	"Strafe right",			"+moveright"
+	Control 	"Jump",					"+jump"
+	Control 	"Crouch",				"+crouch"
+	//Control 	"Fly / Swim up",		"+moveup"
+	//Control 	"Fly / Swim down",		"+movedown"
+	Control 	"Run",					"+speed"
+	Control 	"Show map",		"togglemap"
+	
+
+	StaticText 	"Inventory", 1
+	Control 	"Activate item",		"invuse"
+	Control 	"Next item",			"invnext"
+	Control 	"Previous item",		"invprev"
+	Control 	"Drop item",			"invdrop"
+
+	StaticText 	"Multiplayer",1
+	Control 	"Show Scoreboard",		"+showscores"
+	Control 	"Say",					"messagemode"
+	Control 	"Team say",				"messagemode2"
+	Control 	"Coop Spy (player camera)",				"spynext"
+	StaticText 	""
+	StaticText 	"Misc.", 1
+	Control 	"Screenshot",			"screenshot"
+	Control  	"Open console",			"toggleconsole"
+}

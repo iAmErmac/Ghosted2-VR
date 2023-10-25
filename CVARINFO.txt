@@ -1,0 +1,101 @@
+user int G2_GNLimiter = 20;
+user int G2_GNSight = 2;
+user int G2_GN = 2;
+user bool G2_RAIN = true;
+user bool G2_FOG = true;
+user bool G2_SN_DisableDistortions = true;
+
+user int G2_STATUS = 0;
+
+user int G2_Launched = 0;
+user int G2_IGNORE = 0;
+user int G2_LastVersion = 0;
+
+server int G2_CheapFlashlight = 0; //After how many ppl the flashlight will use cheaper effect?
+
+server int G2_ScoreCountDown = 0;
+server int G2_GhostCam = 0;
+
+server int G2_Festive = 0;
+
+server int G2_PageAdder = 0; //Extra pages per X ppl
+server int G2_PageAdderCount = 1; //How many extra pages?
+server int G2_PageCount = 0; //Force page count
+server int G2_GAMEMODE = 0;
+
+server int G2_GhostCount = 0;
+
+server int G2_Skill = 0;
+server int G2_AutomaticSkill = 0;
+
+//server float G2_MaxRatio = 100.0; // The largest ratio allowed by the server.. to prevent exploiting
+
+//Engine Compatibility:
+server int ENGINE_ConsoleCommand = 0;
+server int ENGINE_SetCvar = 0;
+server int ENGINE_Survival = 0;
+server int ENGINE_Menudef = 0;
+server int ENGINE_SourcePort = 0;
+server int ENGINE_DesyncAcs = 0;
+server int ENGINE_HudmsgUpgrade = 0;
+server int ENGINE_GetCvarFloat = 0;
+server int ENGINE_CheckSight = 0;
+
+//Test CVAR for Zandronum 2.0
+user int G2_Helper = 0;
+user noarchive int G2_TESTCVAR = 0;
+server noarchive int G2_TESTCVAR2 = 0;
+user noarchive float G2_TESTCVAR3 = 0;
+server noarchive float G2_TESTCVAR4 = 0;
+
+//Stats: //Forgive me for doing more CVARS ;(
+user int G2_ST_DAMAGE = 0;
+user int G2_ST_PAGES = 0;
+user int G2_ST_WIN = 0;
+user int G2_ST_LOSE = 0;
+
+//Achievements:
+user int G2_ACH_DAMAGE = 0;
+user int G2_ACH_PAGES = 0;
+user int G2_ACH_WIN = 0;
+user int G2_ACH_LOSE = 0;
+
+user bool G2_ACH_0 = false;
+user bool G2_ACH_1 = false;
+user bool G2_ACH_2 = false;
+user bool G2_ACH_3 = false;
+user bool G2_ACH_4 = false;
+user bool G2_ACH_5 = false;
+user bool G2_ACH_6 = false;
+user bool G2_ACH_7 = false;
+user bool G2_ACH_8 = false;
+user bool G2_ACH_9 = false;
+user bool G2_ACH_11 = false;
+user bool G2_ACH_12 = false;
+user bool G2_ACH_13 = false;
+user bool G2_ACH_14 = false;
+user bool G2_ACH_15 = false;
+user bool G2_ACH_16 = false;
+user bool G2_ACH_17 = false;
+user bool G2_ACH_18 = false;
+user bool G2_ACH_19 = false;
+user bool G2_ACH_20 = false;
+user bool G2_ACH_21 = false;
+user bool G2_ACH_22 = false;
+user bool G2_ACH_23 = false;
+user bool G2_ACH_24 = false;
+user bool G2_ACH_25 = false;
+user bool G2_ACH_26 = false;
+user bool G2_ACH_27 = false;
+user bool G2_ACH_28 = false;
+user bool G2_ACH_29 = false;
+user bool G2_ACH_30 = false;
+user bool G2_ACH_31 = false;
+user bool G2_ACH_32 = false;
+user bool G2_ACH_33 = false;
+user bool G2_ACH_34 = false;
+user bool G2_ACH_35 = false;
+user bool G2_ACH_36 = false;
+user bool G2_ACH_37 = false;
+user bool G2_ACH_38 = false;
+user bool G2_ACH_39 = false;

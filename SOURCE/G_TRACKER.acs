@@ -1,0 +1,219 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_Tracker.acs - Tracking of statistics    //
+//////////////////////////////////////////////
+#include "zcommon.acs"
+
+#import "G_ENGINE.acs"
+#import "G_MATH.acs"
+
+#library "G_TRACKER"
+/* I was asked by the guys behind SOPA to create this */
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// THIS ONLY TRACKS ANNONYMOUS DATA, NO NAMES, IP ADRESSES OR ANYTHING TO IDENTIFY ANYONE WHO IS SAVED //
+//		Reasons did I do this:																		   //
+//			1. To be able watch results of play testing without staying on the server				   //
+//			2. To track highest score and biggest player count on the server						   //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// HIGHEST SCORE
+global int 1 : TRACKER_LSCORE;
+global int 2 : TRACKER_LSCORE_MAP;
+global int 3 : TRACKER_LSCORE_PLCOUNT;
+global int 4 : TRACKER_LSCORE_ENDTIME;
+global int 5 : TRACKER_LSCORE_PAPICKED;
+global int 6 : TRACKER_LSCORE_CONDTN; //Win or Lose?
+
+// BIGGEST PLAYER COUNT
+global int 7: TRACKER_LPLCOUNT;
+global int 8: TRACKER_LPLCOUNT_MAP;
+
+// MOST KILLS FOR GHOSTS
+global int 9: TRACKER_GHKILLS1;
+global int 10: TRACKER_GHKILLS2;
+global int 11: TRACKER_GHKILLS3;
+global int 29: TRACKER_SUICIDES;
+ 
+// PLAYED MAP
+global int 12: TRACKER_MAP00;
+global int 13: TRACKER_MAP01;
+global int 14: TRACKER_MAP02;
+global int 15: TRACKER_MAP03;
+global int 16: TRACKER_MAP04;
+global int 17: TRACKER_MAP05;
+global int 18: TRACKER_MAP06;
+global int 19: TRACKER_MAP07;
+global int 20: TRACKER_MAP08;
+global int 21: TRACKER_MAP09;
+global int 22: TRACKER_MAP10;
+global int 23: TRACKER_MAP11;
+global int 24: TRACKER_MAP12;
+global int 25: TRACKER_MAP13;
+global int 26: TRACKER_MAP14;
+
+
+// AVERAGE matchtime
+global int 30: TRACKER_MATCHTIME;
+global int 31: TRACKER_MATCHES;
+
+global int 32: TRACKER_EXCEPTIONS;
+
+
+script 412 (void) net {
+
+	terminate; //<--- This script can kill servers somehow... scarier thing is that anyone can call it at any time!
+
+	print(s:"Tracker data was outputted into console...");
+	log(s:"TRACKER REPORT");
+	log(n:0,s:" -> Activated this");
+	Log(s:"===================================================");
+	Log(s:"Largest Score:");
+	Log(s:"  Score: ",d:TRACKER_LSCORE);
+	Log(s:"  Match Pages: ",d:TRACKER_LSCORE_PAPICKED);
+	Log(s:"  Player count: ",d:TRACKER_LSCORE_PLCOUNT);
+	Log(s:"  Map: ",d:TRACKER_LSCORE_MAP);
+	Log(s:"  Match ended: ",d:TRACKER_LSCORE_ENDTIME);
+	
+	if( TRACKER_LSCORE_CONDTN == 1) {
+		Log(s:" CONDTN: Victory!");
+	} else if(TRACKER_LSCORE_CONDTN == 0) {
+		Log(s:" CONDTN: Defeat!");
+	} else {
+		Log(s:" CONDTN: Fatal error!");
+	}
+	
+	Log(s:"");
+	Log(s:"Biggest Playercount:");
+	Log(s:"  Players: ",d:TRACKER_LPLCOUNT);
+	Log(s:"  Map: ",d:TRACKER_LPLCOUNT_MAP);
+	
+	Log(s:"");
+	Log(s:"Greatest ghost kills:");
+	Log(s:"  Suicides: ",d:TRACKER_SUICIDES);
+	Log(s:"  Ghosttype 1: ",d:TRACKER_GHKILLS1);
+	Log(s:"  Ghosttype 2: ",d:TRACKER_GHKILLS2);
+	Log(s:"  Ghosttype 3: ",d:TRACKER_GHKILLS3);
+	
+	Log(s:"");
+	Log(s:"Maps played:");
+	Log(s:"  Map00: ",d:TRACKER_MAP00);
+	Log(s:"  Map01: ",d:TRACKER_MAP01);
+	Log(s:"  Map02: ",d:TRACKER_MAP02);
+	Log(s:"  Map03: ",d:TRACKER_MAP03);
+	Log(s:"  Map04: ",d:TRACKER_MAP04);
+	Log(s:"  Map05: ",d:TRACKER_MAP05);
+	Log(s:"  Map06: ",d:TRACKER_MAP06);
+	Log(s:"  Map07: ",d:TRACKER_MAP07);
+	/*Log(s:"  Map08: ",d:TRACKER_MAP08);
+	Log(s:"  Map09: ",d:TRACKER_MAP09);
+	Log(s:"  Map10: ",d:TRACKER_MAP10);
+	Log(s:"  Map11: ",d:TRACKER_MAP11);
+	Log(s:"  Map12: ",d:TRACKER_MAP12);
+	Log(s:"  Map13: ",d:TRACKER_MAP13);
+	Log(s:"  Map14: ",d:TRACKER_MAP14);*/
+	
+	Log(s:"");
+	Log(s:"Average Match time:");
+	if(TRACKER_MATCHTIME != 0 && TRACKER_MATCHES != 0) {
+		Log(s:"  Time played: ",d:TRACKER_MATCHTIME);
+		Log(s:"  Matches: ",d:TRACKER_MATCHES);
+		
+		if(TRACKER_MATCHES != 0) {
+			Log(s:"  Average time: ",d:TRACKER_MATCHTIME / TRACKER_MATCHES,s:" --> ",f:FixedDiv(TRACKER_MATCHTIME << 16,TRACKER_MATCHES << 16));
+		} else {
+			Log(s:"  Average time: Cannot divide by zero :(");
+		}
+	} else {
+		Log(s:"     No matches have been played yet");
+	}
+	
+	Log(s:" ");
+	
+	Log(s:"Exceptions: ",d:TRACKER_EXCEPTIONS);
+	
+	Log(s:"Debug-----");
+	Log(s:"MapNumber:",d:getLevelInfo(LEVELINFO_LEVELNUM));
+}
+
+/* ===================================================== */
+
+function int TRACKER_WaitBeforeStart(void) { if(isZandronum()) { return 5 + (35 * getcvar("sv_lmscountdowntime")); } return 2; }
+function int TRACKER_IsEnabled(void) { return GameType () == GAME_NET_COOPERATIVE; }
+function void TRACKER_Exception(str func,str description) { log(s:"\cgG_TRACKER::",s:func,s:"::",s:description); }
+
+
+
+// ============================================ HIGHEST SCORE
+function void TRACKER_Server_Score(int pid,int score,int pages,int mapnum,int pcount,int endtime,int CONDTN) {
+	if(TRACKER_LSCORE < score) {
+		//TRACKER_LPLCOUNT = count;
+		TRACKER_LSCORE = score;
+		TRACKER_LSCORE_MAP = mapnum;
+		TRACKER_LSCORE_ENDTIME = endtime;
+		TRACKER_LSCORE_PAPICKED = pages;
+		TRACKER_LSCORE_CONDTN = CONDTN;
+		TRACKER_LSCORE_PLCOUNT = pcount;
+	}
+}
+
+// ============================================ BIGGEST PLAYER COUNT
+function void TRACKER_Server_PlayerCount(int count,int mapnum) {
+	if(TRACKER_LPLCOUNT < count) {
+		TRACKER_LPLCOUNT = count;
+		TRACKER_LPLCOUNT_MAP = mapnum;
+	}
+}
+
+// ============================================ PLAYED MAP
+function void TRACKER_Server_MapNumber(int number) {
+	switch(number) {
+		
+		case 0: TRACKER_MAP00++; break;
+		case 1: TRACKER_MAP01++; break;
+		case 2: TRACKER_MAP02++; break;
+		case 3: TRACKER_MAP03++; break;
+		case 4: TRACKER_MAP04++; break;
+		case 5: TRACKER_MAP05++; break;
+		case 6: TRACKER_MAP06++; break;
+		case 7: TRACKER_MAP07++; break;
+		case 8: TRACKER_MAP08++; break;
+		case 9: TRACKER_MAP09++; break;
+		case 10: TRACKER_MAP10++; break;
+		case 11: TRACKER_MAP11++; break;
+		case 12: TRACKER_MAP12++; break;
+		case 13: TRACKER_MAP13++; break;
+		case 14: TRACKER_MAP14++; break;
+		
+		default: ThrowException("G_TRACKER","TRACKER_Server_MapNumber",strparam(s:"Unexpected map number ",d:number)); break;
+		
+		//case 6: break;
+		//case 7: break;
+	}
+}
+
+
+// ============================================ AVERAGE maptime
+
+function void TRACKER_Server_MapTime(int matchtime) {
+	TRACKER_MATCHTIME+=matchtime/35; //The time should be in seconds to save some space for tha variable
+	TRACKER_MATCHES++;
+}
+
+function void TRACKER_Server_KilledPlayer(int killertype) {
+	switch(killertype) {
+		case -1: TRACKER_SUICIDES++; break;
+		case 0: TRACKER_GHKILLS1++; break;
+		case 1: TRACKER_GHKILLS2++; break;
+		case 2: TRACKER_GHKILLS3++; break;
+	}
+}
+
+//=======================================================================
+
+/*
+function int TRACKER_Client_Score (int score) {
+
+}*/

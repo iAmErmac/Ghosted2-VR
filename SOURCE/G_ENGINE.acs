@@ -1,0 +1,160 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_ENGINE.acs - Source Port Identifier     //
+//////////////////////////////////////////////
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+
+#library "G_ENGINE"
+
+#libdefine EXEC_ZANDRONUM 2
+#libdefine EXEC_ZDOOM 0
+#libdefine EXEC_GZDOOM 1
+#libdefine EXEC_UNKNOWN -1
+
+int _usedport = -1;
+
+int ENGINE_CONSOLECOMMAND;
+int ENGINE_SETCVAR;
+int ENGINE_SURVIVALGAMEMODE;
+int ENGINE_MENUDEF;
+int ENGINE_DESYNCACS;
+int ENGINE_HUDMSGUPGRADE;
+int ENGINE_GETCVARFLOAT;
+int ENGINE_CHECKSIGHT;
+
+function int ENGINE_checkSourcePort(void) {
+	if(getCvar("Engine_SourcePort") != 0) {
+		//printbold(s:"The port has been forced to ENGINE_Sourceport: ",d:getcvar("Engine_SourcePort")-1);
+		_usedport = getCvar("Engine_SourcePort")-1;
+	}
+	
+	//TODO add more cvars to check, but this one is for sure not zero!
+	if(getCvar("sv_possessionholdtime") > 0) {
+		_usedport = EXEC_ZANDRONUM;
+		return _usedport;
+	}
+	
+	//TODO add more cvars to check
+	if(getCvar("vid_renderer") == true || getCvar("gl_seamless") > 0 || getCvar("gl_lightmode") > 0 || getCvar("gl_lights_size") > 0) {
+		_usedport = EXEC_GZDOOM;
+	} else {
+		_usedport = EXEC_ZDOOM;
+	}
+	return _usedport;
+}
+
+function int ENGINE_Init(void) {
+	ENGINE_checkSourcePort();
+	
+	if(getcvar("G2_Debug") > 0) {
+		switch(_usedport) {
+			case EXEC_ZDOOM: log(s:"ENGINE: Identified ZDoom"); break;
+			case EXEC_GZDOOM: log(s:"ENGINE: Identified GZDoom"); break;
+			case EXEC_ZANDRONUM: log(s:"ENGINE: Identified Zandronum"); break;
+			default: log(s:"ENGINE: Couldn't determine sourceport"); break;
+		}
+	}
+	
+	ENGINE_SetFeatureRestrictions();
+	return _usedport;
+}
+
+//TODO find out what the fuck is the DESYNCSECTORCOLOR supposed to really do!
+function void ENGINE_SetFeatureRestrictions(void) {
+	ENGINE_CHECKSIGHT = CheckSight(0,0,0) || CheckSight(PlayerTag(0),PlayerTag(0),0) || CheckSight(G_PAGEMINSPOT,G_PAGEMINSPOT,0);	
+
+	if(isZandronum()) {
+		ENGINE_SURVIVALGAMEMODE = 1;
+		ENGINE_DESYNCACS = 1;
+		ENGINE_HUDMSGUPGRADE = 0;
+		
+		SetCvar("G2_TESTCVAR",1);
+		SetCvar("G2_TESTCVAR2",1);
+		
+		//Checks if SetCvar works :)
+		if(GetCvar("G2_TESTCVAR") == 1 || getCvar("G2_TESTCVAR2") == 1) {
+			ENGINE_SETCVAR = 1;
+			ENGINE_CONSOLECOMMAND = 0;
+			SetCvar("G2_TESTCVAR",0);
+			SetCvar("G2_TESTCVAR2",0);
+		} else {
+			ENGINE_SETCVAR = 0;
+			ENGINE_CONSOLECOMMAND = 1;
+		}
+		
+		//Checks if GetCvar can return float numbers
+		if(ENGINE_CONSOLECOMMAND) {
+			ConsoleCommand("set G2_TESTCVAR3 1.5");
+			ConsoleCommand("set G2_TESTCVAR4 1.5");
+		} else {
+			SetCvar("G2_TESTCVAR3",1.5);
+			SetCvar("G2_TESTCVAR4",1.5);
+		}
+		if(GetCvar("G2_TESTCVAR") == 1.5 || getCvar("G2_TESTCVAR2") == 1.5) {
+			ENGINE_GETCVARFLOAT = 1;
+		}
+		
+	} else {
+		ENGINE_SETCVAR = 1;
+		ENGINE_MENUDEF = 1;
+		ENGINE_DESYNCACS = 0;
+		ENGINE_HUDMSGUPGRADE = 1;
+		ENGINE_CONSOLECOMMAND = 0;
+		ENGINE_GETCVARFLOAT = 1;
+	}
+	
+	ENGINE_CONSOLECOMMAND = _ENGINE_CHECKFEATURECVAR( "ENGINE_ConsoleCommand",ENGINE_CONSOLECOMMAND);
+	ENGINE_SETCVAR = _ENGINE_CHECKFEATURECVAR( "ENGINE_SetCvar",ENGINE_SETCVAR);
+	ENGINE_SURVIVALGAMEMODE = _ENGINE_CHECKFEATURECVAR( "ENGINE_Survival",ENGINE_SURVIVALGAMEMODE);
+	ENGINE_MENUDEF = _ENGINE_CHECKFEATURECVAR( "ENGINE_Menudef",ENGINE_MENUDEF);
+	ENGINE_DESYNCACS = _ENGINE_CHECKFEATURECVAR( "ENGINE_DesyncAcs",ENGINE_DESYNCACS);
+	ENGINE_HUDMSGUPGRADE =  _ENGINE_CHECKFEATURECVAR( "ENGINE_HudmsgUpgrade",ENGINE_HUDMSGUPGRADE);
+	ENGINE_GETCVARFLOAT = _ENGINE_CHECKFEATURECVAR( "ENGINE_GetCvarFloat",ENGINE_GETCVARFLOAT);
+	ENGINE_CHECKSIGHT = _ENGINE_CHECKFEATURECVAR( "ENGINE_CheckSight",ENGINE_CHECKSIGHT);
+	
+	if(getcvar("G2_Debug") > 0) {
+		log(s:"ENGINE: Initialized Sourceport feature restrictions!");
+	}
+}
+
+script 413 (void) net {
+	log(n:0,s:" -> Activated this");
+	log(s:"PORT: ",d:_usedport);
+	log(s:"ENGINE_CONSOLECOMMAND:",d:ENGINE_CONSOLECOMMAND);
+	log(s:"ENGINE_SETCVAR:",d:ENGINE_SETCVAR);
+	log(s:"ENGINE_MENUDEF:",d:ENGINE_MENUDEF);
+	log(s:"ENGINE_DESYNCACS:",d:ENGINE_DESYNCACS);
+	log(s:"ENGINE_SURVIVALGAMEMODE:",d:ENGINE_SURVIVALGAMEMODE);
+	log(s:"ENGINE_HUDMSGUPGRADE:",d:ENGINE_HUDMSGUPGRADE);
+	log(s:"ENGINE_GETCVARFLOAT:",d:ENGINE_GETCVARFLOAT);
+	log(s:"ENGINE_CHECKSIGHT:",d:ENGINE_CHECKSIGHT);
+}
+
+function int _ENGINE_CHECKFEATURECVAR(int feature,int value) {
+	if(getcvar(feature) == 1) {
+		return 1;
+	} else if(getcvar(feature) == -1) {
+		return 0;
+	}
+	return value;
+}
+
+function int ENGINE_getSourcePort(void) {
+	return _usedport;
+}
+
+function bool isGZDoom(void) {
+	return _usedport == EXEC_GZDOOM;
+}
+
+function bool isZDoom(void) {
+	return _usedport == EXEC_ZDOOM;
+}
+
+function bool isZandronum(void) {
+	return _usedport == EXEC_ZANDRONUM;
+}

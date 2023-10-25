@@ -1,0 +1,37 @@
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_GHOST.acs"
+#import "G_SIGHT.acs"
+#import "G_PAGES.acs"
+#import "G_LIGHTS.acs"
+#import "G_MATH.acs"
+#import "G_TRACKER.acs"
+#import "G_MOD.acs"
+#import "G_PLAYER.acs"
+#import "G_NOISE.acs"
+#import "G_AI.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_ENGINE.acs"
+#import "G_SNOISE.acs"
+
+#library "MAP06"
+
+script 999 open {
+    G_PAGEMINSPOT = 500;
+    G_PAGEMAXSPOT = 599;
+    G_PAGESCOUNT = 8;
+    PAGE_APPARTING = 1024; //Quite large distancing :3
+    G_GHOSTMIN = 1000;
+    G_GHOSTMAX = 1003;
+	
+	//Light_ChangeAllToValue(32);
+	//Light_ChangeToColor(255,0,0,50);
+	
+}
+
+script 995 open {
+    Sector_SetLink(101,100,0,1);
+	Sector_SetLink(103,102,0,1);
+}
+

@@ -1,0 +1,29 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_MOD.acs - Mod Detector					//
+//////////////////////////////////////////////
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+
+#library "G_MOD"
+
+#define TID_MOD_TEST 19879
+
+int mod_brutaldoom;
+int mod_ghosted1;
+int mod_ghosted2old;
+
+//TODO add more mod detections for the lulzs!
+
+function int MOD_trySpawn(str what) { if(spawnSpot(what, G_GHOSTSPAWNTAG, TID_MOD_TEST,0)) { Thing_Remove(TID_MOD_TEST); return 1; } return 0; }
+
+function int MOD_Detect(void) {
+	mod_brutaldoom = MOD_trySpawn("Brutal_Blood") || MOD_TrySpawn("BrutalPistol");
+	mod_ghosted1 = MOD_trySpawn("PlayerCanBeHarmed");
+	mod_ghosted2old = MOD_trySpawn("Lquality");
+	
+	return mod_brutaldoom + mod_ghosted1 + mod_ghosted2old;
+}

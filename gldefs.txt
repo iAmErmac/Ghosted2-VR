@@ -1,0 +1,4 @@
+
+#include "gldefs/brightmaps.txt"
+#include "gldefs/dynlights.txt"
+#include "gldefs/weapons.txt"

@@ -1,0 +1,92 @@
+
+Class Ghosted2_SpecialWeaponHandler : EventHandler
+{
+	override void WorldLoaded(WorldEvent event)
+	{
+		_isTitlemap = CheckTitlemap();
+	}
+	
+	override void WorldTick()
+	{
+		if(_isTitlemap) return;
+		
+		playerinfo player = players[consoleplayer];
+		if(!player) return;
+		
+		console.printf(""..player.mo.countinv("GHOffhandFist"));
+		
+		if(!player.OffhandWeapon)
+		{
+			let offhandfistweap = Weapon(player.mo.findinventory("GHOffhandFist"));
+			if(!offhandfistweap)
+			{
+				player.mo.giveinventory("GHOffhandFist", 1);
+				offhandfistweap = Weapon(player.mo.findinventory("GHOffhandFist"));
+			}
+			player.OffhandWeapon = offhandfistweap;
+			player.PendingWeapon = offhandfistweap;
+			player.mo.BringUpWeapon();
+		}
+	}
+
+	private static bool CheckTitlemap()
+	{
+		bool isTitlemap = (level.mapname == "TITLEMAP");
+		return isTitlemap;
+	}
+	
+	private bool _isTitlemap;
+}
+
+Class LighterZ : Weapon
+{
+	action void A_FlameGlow()
+	{
+		let pmo = invoker.owner.player.mo;
+		int hand = invoker.bOffhandWeapon;
+		Actor _puff, _puff2;
+		double angle = pmo.angle;
+		double pitch = pmo.AimTarget() ? pmo.BulletSlope(null, ALF_PORTALRESTRICT) : pmo.pitch;
+		
+		_puff = pmo.LineAttack(angle, 4, pitch+90, 0, "melee", "GHDummyPuff1", LAF_NOIMPACTDECAL | LAF_NOINTERACT | LAF_NORANDOMPUFFZ | (hand ? LAF_ISOFFHAND : 0));
+		_puff2 = pmo.LineAttack(angle, 15, pitch+90, 0, "melee", "GHDummyPuff1", LAF_NOIMPACTDECAL | LAF_NOINTERACT | LAF_NORANDOMPUFFZ | (hand ? LAF_ISOFFHAND : 0));
+		Actor.Spawn("Lightprojectile2", _puff.pos);
+		Actor.Spawn("Lightprojectile", _puff2.pos);
+	}
+}
+
+Class GlowStickZ : Weapon
+{
+	action void A_StickGlow()
+	{
+		let pmo = invoker.owner.player.mo;
+		int hand = invoker.bOffhandWeapon;
+		Actor _puff, _puff2;
+		double angle = pmo.angle;
+		double pitch = pmo.AimTarget() ? pmo.BulletSlope(null, ALF_PORTALRESTRICT) : pmo.pitch;
+		
+		_puff = pmo.LineAttack(angle, 6, pitch+90, 0, "melee", "GHDummyPuff1", LAF_NOIMPACTDECAL | LAF_NOINTERACT | LAF_NORANDOMPUFFZ | (hand ? LAF_ISOFFHAND : 0));
+		Actor.Spawn("GlowStickLight", _puff.pos);
+	}
+}
+
+Class GHDummyPuff1 : Actor
+{
+	Default
+	{
+	Radius 1;
+	Height 1;
+	Speed 0;
+	Damage 0;
+	+GHOST;
+	+NOGRAVITY;
+	}
+	
+	States
+	{
+	Spawn:
+		TNT1 A 2;
+		//TNT1 A 2 A_SpawnParticle("FF 00 00", SPF_FULLBRIGHT, 1, 3);
+		Stop;
+	}
+}

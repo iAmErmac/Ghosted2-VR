@@ -1,0 +1,5 @@
+
+Texture "models/weapons/lighter/flame.png"
+    pic "models/weapons/lighter/flame.png" tics 6
+    pic "models/weapons/lighter/flame2.png" tics 6
+    pic "models/weapons/lighter/flame3.png" tics 6

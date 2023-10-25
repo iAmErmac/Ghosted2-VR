@@ -1,0 +1,521 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_ACHIEVEMENTS.acs - Gonna unlock em all!!//
+//////////////////////////////////////////////
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_MATH.acs"
+#import "G_PAGES.acs"
+#import "G_GHOST.acs"
+#import "G_SIGHT.acs"
+#import "G_NET.acs"
+#import "G_ENGINE.acs"
+
+
+#library "G_ACHIEVEMENTS"
+
+#define ACHIEVEMENT_COUNT 40
+
+int ACHIEVEMENT_NAME[ACHIEVEMENT_COUNT][2] = {
+	/* 0  */  {"Seeker","Pick total 50 pages"},
+	/* 1  */  {"Scavenger","Pick 100 total pages"},
+	/* 2  */  {"Soul Hunter","Pick 500 total pages"},
+	
+	/* 3  */  {"Just a scratch","Recieve total of 1000 damage"},
+	/* 4  */  {"Broken","Recieve total of 5000 damage"},
+	/* 5  */  {"Endurance","Recieve total of 10000 damage"},
+	
+	/* 6  */  {"Tortured","Recieve 500 damage in one round without dying"},
+	/* 7  */  {"Overkill","Win a round with atleast five ghosts"},
+	/* 8  */  {"Party","Win a single round with atleast four other people"},
+	/* 9  */  {"Peacefull","Win a single round without getting hurt at all"},
+	
+	/* 10 */  {"First step","Make your first victory!"},
+	/* 11 */  {"Survivalist","Win 10 matches!"},
+	/* 12 */  {"Excorcist","Win 50 matches!"},	
+	
+	/* 13 */  {"Gluttony","Pick 8 pages while playing with more than two other people"},
+	/* 14 */  {"Running out of time","Win match under 5 minutes after the map started"},
+	/* 15 */  {"Decade","Pick 10 pages in one round"},
+	/* 16 */  {"Twice as much"," Pick 20 pages in one round"},
+	/* 17 */  {"Greenpeace","Have near full battery and win the round"},
+	/* 18 */  {"Power waster","Deplete the flashlight's battery"},
+	/* 19 */  {"Ghost Buster","What?"},
+	/* 20 */  {"Eight","Find the secret button and press it..."},
+	/* 21 */  {"Denied","Die close to The last page"},
+	/* 22 */  {"Saviour","Pick the last page while another player is getting slaughtered..."},
+	/* 23 */  {"NULL",""},
+	/* 24 */  {"NULL",""},
+	/* 25 */  {"NULL",""},
+	/* 26 */  {"NULL",""},
+	/* 27 */  {"NULL",""},
+	/* 28 */  {"NULL",""},
+	/* 29 */  {"NULL",""},
+	/* 30 */  {"NULL",""},
+	/* 31 */  {"NULL",""},
+	/* 32 */  {"NULL",""},
+	
+	/* 33 */  {"Flowing Waters","Win the Facility map on Nightmare"},
+	/* 34 */  {"Rest In Peace","Win the Cemetary map on Nightmare"},
+	/* 35 */  {"Late Train","Win the  Subway map on Nightmare"},
+	/* 36 */  {"Midnight Crime","Win the  Town map on Nightmare"},
+	/* 37 */  {"Blood and Snow","Win the Silent Night map on Nightmare"},
+	/* 38 */  {"Budget Cut","Win the Advanced Research Corporation map on Nightmare"},
+	/* 39 */  {"Angels of Death","Win the Hospital map on Nightmare"},
+	
+};
+
+
+#define G_AHUD_COUNT 5
+#define HID_ACHIEVEMENT 6650
+int G_AHUD_POSY[64][G_AHUD_COUNT];
+
+// CLIENTSIDE VARIABLES
+
+int ACHIEVEMENT_SKILL = -1;
+int ACHIEVEMENT_TOTALPAGESPICKED = 0;
+
+int ACHIEVEMENT_PAGESPICKED = 0;
+int ACHIEVEMENT_DAMAGERECIEVED = 0;
+int ACHIEVEMENT_VICTORIES = 0;
+int ACHIEVEMENT_LOSES = 0;
+
+int ACHIEVEMENT_STARTPAGESPICKED = 0;
+int ACHIEVEMENT_STARTDAMAGE = 0;
+int ACHIEVEMENT_STARTVICTORIES = 0;
+int ACHIEVEMENT_STARTLOSES = 0;
+
+int ACHIEVEMENT_LARGESTGHOSTCOUNT = 0;
+
+// Special protective
+int ACHIEVEMENT_INITIALIZED = 0;
+
+int ACHIEVEMENT_GAMEOVER = 0;
+
+
+
+int A_Sound = -350;
+
+script 866 (int message) clientside {
+	if(PlayerNumber() != ConsolePlayerNumber()) terminate;
+	int slot = 0;
+	int mytime = Timer();
+	
+	if(G_AHUD_POSY[PlayerNumber()][0] != 0) {
+		for(int i = 0;i < G_AHUD_COUNT;i++) {
+			
+			if(G_AHUD_POSY[PlayerNumber()][i] < G_AHUD_POSY[PlayerNumber()][slot]) {
+				slot = i;
+				
+				if(G_AHUD_POSY[PlayerNumber()][i] == 0)
+					break;
+			}
+		}
+	}
+	
+	G_AHUD_POSY[PlayerNumber()][slot] = Timer();
+	
+	SetHudSize(800,600,0);
+	SetFont("BigFont");
+	
+	if(Timer() - A_Sound > 350) {
+		AmbientSound("Ghosted2/Achievement",127);
+		A_Sound = Timer();
+	}
+	//12.0 is height of the BIGFONT
+	if(ENGINE_HUDMSGUPGRADE) {
+		hudmessagebold(s:"Achievement Unlocked: \cg",s:ACHIEVEMENT_NAME[message][0];HUDMSG_FADEINOUT,HID_ACHIEVEMENT + slot,CR_WHITE,400.0,450.0 + FixedMul(slot << 16,14.0),3.0,2.0,2.0);
+	} else {
+		hudmessagebold(s:"Achievement Unlocked: \cg",s:ACHIEVEMENT_NAME[message][0];HUDMSG_FADEINOUT,HID_ACHIEVEMENT + slot,CR_WHITE,400.0,450.0 + FixedMul(slot << 16,14.0),7.0);
+	}
+	
+	delay(35 * 7);
+	
+	if(mytime == G_AHUD_POSY[PlayerNumber()][slot]) {
+		G_AHUD_POSY[PlayerNumber()][slot] = 0;
+	}
+}
+
+
+
+script 865 enter clientside {
+	if(GameType() == GAME_TITLE_MAP ) terminate;
+	if(PlayerNumber() != ConsolePlayerNumber()) terminate;
+	
+	int lasthp = GetActorProperty(0,APROP_HEALTH);
+	
+	if(GameType() == GAME_SINGLE_PLAYER) {
+		delay(70);
+	} else {
+		delay(10);
+	}
+	
+	ACHIEVEMENT_INITIALIZED = 1;
+	
+	ACHIEVEMENT_STARTPAGESPICKED = GetCvar("G2_ACH_PAGES");
+	ACHIEVEMENT_STARTDAMAGE = GetCvar("G2_ACH_DAMAGE");
+	ACHIEVEMENT_STARTVICTORIES = GetCvar("G2_ACH_WIN");
+	ACHIEVEMENT_STARTLOSES = GetCvar("G2_ACH_LOSE");
+	
+	while(GetActorProperty(0,APROP_HEALTH) > 0) {
+		delay(1);
+		
+		if(lasthp > GetActorProperty(0,APROP_HEALTH) && (lasthp - GetActorProperty(0,APROP_HEALTH)) < 200) {
+			SaveCvar("G2_ACH_DAMAGE",GetCvar("G2_ACH_DAMAGE") + (lasthp - GetActorProperty(0,APROP_HEALTH)) );
+			SaveCvar("G2_ST_DAMAGE",GetCvar("G2_ST_DAMAGE") + (lasthp - GetActorProperty(0,APROP_HEALTH)) );
+			
+			ACHIEVEMENT_DAMAGERECIEVED += lasthp - GetActorProperty(0,APROP_HEALTH);
+			if(GetCvar("G2_ACH_DAMAGE") >= 1000) {
+				Achievement_Award(3);
+			} 
+			if(GetCvar("G2_ACH_DAMAGE") >= 5000) {
+				Achievement_Award(4);
+			} 
+			if(GetCvar("G2_ACH_DAMAGE") >= 10000) {
+				Achievement_Award(5);
+			}
+			
+			if(ACHIEVEMENT_DAMAGERECIEVED >= 500 && GetActorProperty(0,APROP_HEALTH) > 0) {
+				Achievement_Award(6);
+			}
+		}
+		
+		if(checkInventory("G2_GhostBuster") > 0) {
+			Achievement_Award(19);
+		}
+		
+		if(checkInventory("BatteryPower") == 0 && checkInventory("Flashlight")) {
+			Achievement_Award(18);
+		} else if(ACHIEVEMENT_GAMEOVER == 1 && CheckInventory("BatteryPower") > 30000 && checkInventory("Flashlight")) {
+			Achievement_Award(17);
+		}
+		
+		if(ACHIEVEMENT_GAMEOVER == 1 && getLevelInfo(LEVELINFO_LEVELNUM) >= 1 && getLevelInfo(LEVELINFO_LEVELNUM) <= 7 && ACHIEVEMENT_SKILL == 4) {
+			Achievement_Award(32+getLevelInfo(LEVELINFO_LEVELNUM));
+		}
+		
+		lasthp = GetActorProperty(0,APROP_HEALTH);
+	}
+	SaveCvar("G2_ST_LOSE",GetCvar("G2_ST_LOSE") + 1);
+}
+
+/*
+0 - Page Picked (By activator)
+1 - Game Ended (arg1: G_GAMEOVER)
+2 - Ghost count (arg1: count)
+3 - G2_Skill (arg1: value)
+4 - Page picked (global)
+5 - Died close to the last page (arg1: distance between you and page in integer value)
+6 - Picked up page and saved another player that way!
+*/
+
+script 863 (int action,int param,int key) clientside {
+	
+	if(!NET_CheckKey(key)) {
+		NET_Client_RequestKey();
+		if(getcvar("g2_debug") > 0) {
+			log(s:"Unauthorized access");
+			log(s:"Requesting new NET_KEY");
+		}
+		delay(35 * 2); //Wait some time to recieve the new key
+		
+		if(!NET_CheckKey(key)) {
+			if(getcvar("g2_debug") > 0) {
+				log(s:"Net key still doesn't match... terminating request");
+			}
+			terminate;
+		}
+	}
+	
+	if(!NET_CheckKey(key) || PlayerIsSpectator(PlayerNumber()) == 1 || NET_GetRecieverNumber(key) != ConsolePlayerNumber()) {
+		if(getcvar("g2_debug") > 0) {
+			if(NET_GetRecieverNumber(key) == ConsolePlayerNumber()) {
+				log(s:"------------ACCESS DENIED--------------");
+				log(s:"Key match?: ",d:NET_CheckKey(key),s:" Player is spectating?: ",d:PlayerIsSpectator(PlayerNumber()) == 1,s:" Reciever Number is correct?: ",d:NET_GetRecieverNumber(key) == ConsolePlayerNumber());
+				log(s:"achievement action: ",d:action,s:" param: ",d:param);
+				log(s:"Notify RaveYard to fix this, if you didn't tried to manually puke this script :)");
+			}
+		}
+		terminate;
+	}
+	
+	Achievement_Award(-1);
+	
+	switch(action) {
+		case 0: 
+			ACHIEVEMENT_PAGESPICKED++;
+			
+			SaveCvar("G2_ACH_PAGES",GetCvar("G2_ACH_PAGES") + 1); 
+			SaveCvar("G2_ST_PAGES",GetCvar("G2_ST_PAGES") + 1);
+			
+			if(GetCvar("G2_ACH_PAGES") > 50) {
+				Achievement_Award(0);
+			} 
+			
+			if(GetCvar("G2_ACH_PAGES") > 100) {
+				Achievement_Award(1);
+			}
+			
+			if(GetCvar("G2_ACH_PAGES") > 500) {
+				Achievement_Award(2);
+			}
+			
+			if(ACHIEVEMENT_PAGESPICKED >= 8 && PlayerCount() > 2) {
+				Achievement_Award(13);
+			}
+			
+			if(ACHIEVEMENT_PAGESPICKED >= 10) {
+				Achievement_Award(15);
+			}
+			
+			if(ACHIEVEMENT_PAGESPICKED >= 20) {
+				Achievement_Award(16);
+			}
+			
+			if(getCvar("G2_Debug")) {
+				log(s:"Data Recieved: You picked up a page!");
+			}
+			break; 
+		case 1: 
+			if(param == 1) {
+				ACHIEVEMENT_VICTORIES++;
+				SaveCvar("G2_ACH_WIN",GetCvar("G2_ACH_WIN") + 1); 
+				SaveCvar("G2_ST_WIN",GetCvar("G2_ST_WIN") + 1);
+				
+				if(ACHIEVEMENT_LARGESTGHOSTCOUNT >= 5) {
+					Achievement_Award(7);
+				}
+				
+				if(PlayerCount() >= 5) {
+					Achievement_Award(8);
+				}
+				
+				if(ACHIEVEMENT_DAMAGERECIEVED == 0) {
+					Achievement_Award(9);
+				}
+				
+				if(ACHIEVEMENT_VICTORIES > 0) {
+					Achievement_Award(10);
+				}
+				
+				if(GetCvar("G2_ACH_WIN") >= 10) {
+					Achievement_Award(11);
+				}
+				
+				if(GetCvar("G2_ACH_WIN") >= 50) {
+					Achievement_Award(12);
+				}
+				
+				if(((timer()%35)/60)/60 < 5) {
+					Achievement_Award(14);
+				}
+
+				
+				
+				if(getCvar("G2_Debug")) {
+					log(s:"Data Recieved: Game over: Victory!");
+				}
+			} else if(param == 2){
+				ACHIEVEMENT_LOSES++;
+				SaveCvar("G2_ACH_LOSE",GetCvar("G2_ACH_LOSE") + 1); 
+				
+				if(getCvar("G2_Debug")) {
+					log(s:"Data Recieved: Game over: Defeat!");
+				}
+			}
+			ACHIEVEMENT_GAMEOVER = param;
+			break;
+		case 2:
+			ACHIEVEMENT_LARGESTGHOSTCOUNT = max(ACHIEVEMENT_LARGESTGHOSTCOUNT,param);
+			if(getCvar("G2_Debug") && getcvar("sv_cheats") == 1) {
+				log(s:"Data Recieved: Ghost Count: ",d:param);
+			}
+			break;
+		case 3:
+			ACHIEVEMENT_SKILL = param;
+			if(getCvar("G2_Debug")) {
+				log(s:"Data Recieved: Ingame Skill: ",d:param);
+			}
+			break;
+		case 4:
+			ACHIEVEMENT_TOTALPAGESPICKED++;
+			if(getCvar("G2_Debug")) {
+				log(s:"Data Recieved: Page picked up by: ",n:param+1);
+			}
+			break;
+		case 5:
+			Achievement_Award(21);
+			if(getCvar("G2_Debug")) {
+				log(s:"Data Recieved: Died close to the last page (Distance: ",d:param,s:")");
+			}
+			break;
+		case 6:
+			Achievement_Award(22);
+			if(getCvar("G2_Debug")) {
+				log(s:"Data Recieved: Most likely saved ",n:param+1,s:" from getting slaughtered by picking the last page!");
+			}
+			break;
+	}
+	Achievement_Award(-1);
+}
+
+script 864 respawn clientside {
+	ACS_ExecuteAlways(865,0,0,0,0);
+}
+
+#define HID_SHOWACHIEVEMENT 850
+
+int A_Active = 0;
+
+
+script 862 (void) NET clientside {
+	if(PlayerNumber() != ConsolePlayerNumber()) terminate;
+	if(A_Active == 0) {
+		A_Active = 1;
+		ACS_ExecuteAlways(861,0,0,0,0);
+	} else if(A_Active < 4) {
+		A_Active++;
+	} else {
+		A_Active = 0;
+		delay(20);
+	}
+}
+
+
+script 861 (void) clientside {
+	if(PlayerNumber() != ConsolePlayerNumber()) terminate;
+	
+	localambientsound("Ghosted2/Menu/Click",80);
+	while(A_Active == 1) {
+		Achievement_DisplayList(0,ACHIEVEMENT_COUNT/4*1);
+		delay(2);
+	}
+	
+	localambientsound("Ghosted2/Menu/Click",80);
+	while(A_Active == 2) {
+		Achievement_DisplayList(ACHIEVEMENT_COUNT/4*1,ACHIEVEMENT_COUNT/4*2);
+		delay(2);
+	}
+	
+	localambientsound("Ghosted2/Menu/Click",80);
+	while(A_Active == 3) {
+		Achievement_DisplayList(ACHIEVEMENT_COUNT/4*2,ACHIEVEMENT_COUNT/4*3);
+		delay(2);
+	}
+	
+	localambientsound("Ghosted2/Menu/Click",80);
+	while(A_Active == 4) {
+		Achievement_DisplayList(ACHIEVEMENT_COUNT/4*3,ACHIEVEMENT_COUNT);
+		delay(2);
+	}
+	localambientsound("Ghosted2/Menu/Fade",80);
+}
+
+#define HID_DELETEACH 3500
+#define DACH_Y 520.0
+
+script 858 (void) NET clientside {
+	if(PlayerNumber() != ConsolePlayerNumber()) terminate;
+	G_ShowMessageBackground();
+	int confirmed = 0;
+	
+	if(abs(timer() - getcvar("G2_TEMP_ACHCL")) < 10) {
+		confirmed = 1;
+	} else {
+		
+	}
+	
+	localambientsound("Ghosted2/Menu/Click",80);
+	saveTempCvar("G2_TEMP_ACHCL",timer());
+	
+	setfont("SMALLFONT");
+	sethudsize(800,600,0);
+	
+	if(confirmed == 0) {
+		hudmessage(s:"Do you want to erase\nyour achievements?\n\ccdoubleclick to confirm";HUDMSG_FADEOUT,HID_DELETEACH,CR_RED,400.0,DACH_Y,2.0);
+		terminate;
+	} else {
+		hudmessage(s:"Your achievements...\n...have been deleted";HUDMSG_FADEOUT,HID_DELETEACH,CR_RED,400.0,DACH_Y,2.0);
+	}
+	
+	localambientsound("Ghosted2/Menu/Fade",80);
+	
+	for(int i = 0;i < ACHIEVEMENT_COUNT;i++) {
+		SaveCvar(strparam(s:"G2_ACH_",d:i),0);
+	}
+	SaveCvar("G2_ACH_DAMAGE",0);
+	SaveCvar("G2_ACH_PAGES",0);
+	SaveCvar("G2_ACH_WIN",0);
+	SaveCvar("G2_ACH_LOSE",0);
+	delay(35 * 3);
+}
+
+#define HID_ACHIEVEMENTSTAT1 898
+#define HID_ACHIEVEMENTSTAT2 897
+#define HID_ACHIEVEMENTSTAT3 896
+#define HID_ACHIEVEMENTSTATCOUNT 895
+//#define HID_ACHIEVEMENTSTATPROG 894
+
+#define HID_ACHIEVEMENTTITLE 899
+#define HID_ACHIEVEMENTBG 900
+
+function int Achievement_UnlockedCount(void) {
+	int c = 0;
+	for(int i = 0;i < ACHIEVEMENT_COUNT;i++) {
+		if(getcvar(strparam(s:"G2_ACH_",d:i)) > 0) c++; //hah! a pun!
+	}
+	return c;
+}
+
+function void Achievement_DisplayList(int begin,int end_before) {
+	int x = 12000000;//18800000;
+	int y = 140.0;
+	int color = 0;
+	
+	SetHudSize(800,600,0);
+	SetFont("ACHBG");
+	hudmessage(s:"a";HUDMSG_FADEOUT,HID_ACHIEVEMENTBG,CR_WHITE,400.0,300.0,0.35);
+	
+	SetFont("bigfont");
+	hudmessage(s:"List of Unlockable Achievements";HUDMSG_FADEOUT,HID_ACHIEVEMENTTITLE,CR_WHITE,400.0,80.0,0.35);
+	SetFont("smallfont");
+	int unlocked = Achievement_UnlockedCount();
+	hudmessage(s:"Unlocked: ",d:unlocked,s:"/",d:ACHIEVEMENT_COUNT,s:" (",d:fixeddiv(unlocked << 16,fixeddiv(ACHIEVEMENT_COUNT << 16,100.0))>>16,s:"%)";HUDMSG_FADEOUT,HID_ACHIEVEMENTSTATCOUNT,CR_RED,400.0,490.0,0.35);
+	hudmessage(s:"Total Pages Collected: ",d:getcvar("G2_ACH_PAGES");HUDMSG_FADEOUT,HID_ACHIEVEMENTSTAT1,CR_WHITE,400.0,100.0,0.35);
+	hudmessage(s:"Total Damage Taken: ",d:getcvar("G2_ACH_DAMAGE");HUDMSG_FADEOUT,HID_ACHIEVEMENTSTAT2,CR_WHITE,400.0,110.0,0.35);
+	hudmessage(s:"Victories: ",d:getcvar("G2_ACH_WIN");HUDMSG_FADEOUT,HID_ACHIEVEMENTSTAT3,CR_WHITE,400.0,120.0,0.35);
+	
+	for(int hid = HID_SHOWACHIEVEMENT,i = begin;i < end_before;i++) {
+	
+		if(ACHIEVEMENT_NAME[i][0] == "NULL") continue;
+		
+		
+		y += 32.0; //32.0
+		
+		
+		if(GetCvar(strparam(s:"G2_ACH_",d:i))) {
+			color = CR_RED;
+			setfont(strparam(s:"G2A",d:i));
+		} else {
+			color = CR_BLACK;
+			setfont("G2AN");
+		}
+		
+		hudmessage(s:"a";HUDMSG_FADEOUT,0,color,x - 50.0,y,0.02);
+		
+		SetFont("Smallfont");
+		hudmessage(s:ACHIEVEMENT_NAME[i][0],s:"\cc : ",s:ACHIEVEMENT_NAME[i][1];HUDMSG_FADEOUT,hid,color,x,y,0.2);
+		hid++;
+	}
+}
+
+function int Achievement_Award(int achievementId) {
+	if(achievementId >= 0 && GetCvar(strparam(s:"G2_ACH_",d:achievementId)) == 0) {
+		SaveCvar(strparam(s:"G2_ACH_",d:achievementId),1);
+		ACS_ExecuteAlways(866,0,achievementId,0,0);
+	}
+	return 0;
+}

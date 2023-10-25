@@ -1,0 +1,32 @@
+// CORE ELEMENTS
+#include "Actors/G2_Internal.txt"
+#include "Actors/G2_Detectors.txt"
+
+// EFFECTS
+#include "Actors/G2_SlenderSound.txt"
+#include "Actors/G2_FogSpawner.txt"
+#include "Actors/G2_Rain.txt"
+#include "Actors/G2_Snow.txt"
+
+// DECORATIONS
+#include "Actors/G2_Trees.txt"
+#include "Actors/G2_StreetLight.txt"
+
+// ITEMS
+#include "Actors/G2_Page.txt"
+
+// WEAPONS
+#include "Actors/G2_Offhand.txt"
+#include "Actors/G2_Flashlight.txt"
+#include "Actors/G2_Lighter.txt"
+#include "Actors/G2_GlowStick.txt"
+
+// PLAYER
+#include "Actors/G2_Player.txt"
+
+// GHOSTS
+#include "Actors/Ghosts/G2_Ghost.txt"
+#include "Actors/Ghosts/G2_Slenderman.txt"
+#include "Actors/Ghosts/G2_Girl.txt"
+#include "Actors/Ghosts/G2_Skeleton.txt"
+#include "Actors/Ghosts/G2_Additional.txt"

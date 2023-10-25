@@ -1,0 +1,128 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_SIGHT.acs - The glorious sight detection//
+//////////////////////////////////////////////
+#include "zcommon.acs"
+#import "G_MAIN.acs"
+#import "G_MATH.acs"
+#library "G_SIGHT"
+
+#define DEBUG_SIGHT 0
+
+#define GG_PARAREL 10
+#define PLAYERLIMIT 64
+
+int SIGHT_GHOST[PLAYERLIMIT][GG_PARAREL];
+int SIGHT_ANYTHING[PLAYERLIMIT];
+
+//TODO, double check if it is actually necesary to check if it spawned considering that it is forcespawned making it impossible to not spawn.
+// My brain is dead
+
+//TODO check if I need 6000+pnum .. having just 6000 would do! seriously, that would making this more managable...
+// Note: It didn't work properly, no point in changing as it would have no impact...
+
+//Perhaps check if there isn't anything in the map that has tag 6000 before you the game starts
+function int SIGHT_SpawnDetector(int pnum) {
+	int detectorTID = 6000 + pnum;
+	spawnspotforced("Detector_GhostInSight",0,6000 + pnum, getActorAngle(0) / 255);
+	Thing_SetSpecial(6000 + pnum, 0, pnum, pnum  , pnum);
+	
+	Setactorposition(detectorTID,GetActorX(detectorTID),GetActorY(detectorTID),GetActorZ(detectorTID) + 16.0, 0);
+	
+	if(ThingCount(0,detectorTID) > 1) {
+		ThrowException("G_SIGHT","SIGHT_SpawnDetector",StrParam(s:"TID collision with TID:",d:detectorTID,s:" ,Thing Count:",d:ThingCount(0,detectorTID)));
+	}
+	
+	Thing_ChangeTID(detectorTID,0);
+	return 1;
+}
+
+//TODO same as before
+function int SIGHT_SpawnNarrowDetector(int pnum,int ghostIndex) {
+	int detectorTID = 6064 + pnum + (ghostIndex*PLAYERLIMIT);
+	spawnspotforced("Detector_GhostInSightNarrow",0,detectorTID, getTargetAngle(0,G_GHOSTTAG + ghostIndex) / 255); //TODO functino GhostTag(index)
+	Thing_SetSpecial(detectorTID, 0, pnum, ghostIndex  , ghostIndex);
+	
+	Setactorposition(detectorTID,GetActorX(detectorTID),GetActorY(detectorTID),GetActorZ(detectorTID) + 16.0, 0);
+	
+	if(ThingCount(0,detectorTID) > 1) {
+		ThrowException("G_SIGHT","SIGHT_SpawnNarrowDetector",StrParam(s:"TID collision with TID:",d:detectorTID,s:" ,Thing Count:",d:ThingCount(0,detectorTID)));
+	}
+	
+	//if(ThingCount(0,detectorTID) <= 0) {
+			/*log(s: "SD::Script 780 - Error, Detector didn't appear ",d:6000 + pnum,s: "," ,n:0);
+			
+			if(ThingCount(0,5000 + pnum) == 0) {
+				log(s: " - Player with tag ",d:5000 + pnum, s: " doesn't exist" );
+			}*/
+			
+	//		return 0;
+	//}
+	Thing_ChangeTID(detectorTID,0);
+	
+	return 1;
+}
+
+script 551 enter //The glorious sight checking mechanism :)
+{
+	while(GetActorProperty(0,APROP_HEALTH) > 0) {
+
+		/*if(!SIGHT_SpawnDetector(PlayerNumber())) {
+			//log(s: "SpawnDetector fail for PNUM:",d:PlayerNumber(),s: " ->" ,n:0);
+		}*/
+		SIGHT_SpawnDetector(PlayerNumber());
+		
+		if(G_PlayerSeesSomething(PlayerNumber())) {		
+			for(int i = 0;i < GG_PARAREL;i++) {
+				if(angle_Diff(getactorangle(0),gettargetangle(0,G_GHOSTTAG+i)) <= 0.1505) {
+					if(!SIGHT_SpawnNarrowDetector(PlayerNumber(),i)) {
+						log(s: "SpawnNarrow fail for PNUM:",d:PlayerNumber(),s: " ->" ,n:0);
+					}
+				} else {
+					SIGHT_GHOST[PlayerNumber()][i] = 0;
+				}
+			}
+		} else {
+			for(int au = 0;au < GG_PARAREL;au++) {
+				SIGHT_GHOST[PlayerNumber()][au] = 0;
+			}
+		}
+		
+		/*setfont("BIGFONT");
+		hudmessagebold(s:"S: ",d:G_PlayerSeesSomething(PlayerNumber());HUDMSG_FADEOUT,9000 + (PlayerNumber() * 50),CR_RED,0.55 + fixedmul(0.075,PlayerNumber() << 16),0.1,1.0);	
+	
+		for(int ai = 0;ai < GG_PARAREL;ai++) {
+			hudmessagebold(s:"G[",d:ai,s:"]: ",d:G_PlayerSeesGhost(PlayerNumber(),ai) ;HUDMSG_FADEOUT,9001+ai + (PlayerNumber() * 50),CR_RED,0.55 + fixedmul(0.075,PlayerNumber() << 16),0.2 + FixedMul(0.025,ai << 16),1.0);	
+		}*/
+		
+		delay(3); //delay(2);
+	}
+	G_ClearPlayerSight(PlayerNumber());
+}
+
+
+script 553 respawn {
+	ACS_ExecuteAlways(551,0,0,0);
+}
+
+//obsolete_ should be removed
+//This is used by Detectors
+script 799 (int obsolete_ ,int who,int value)
+{
+	SIGHT_ANYTHING[who] = value;
+}
+
+//Narrow sight detector!
+script 798 (int who,int index,int value)
+{
+	SIGHT_GHOST[who][index] = value;
+}
+
+//Extra functions
+function int G_PlayerSeesSomething(int player) { return SIGHT_ANYTHING[player]; }
+function int G_PlayerSeesGhost(int pnum,int index) { return SIGHT_GHOST[pnum][index];}
+function void G_ClearPlayerSight(int pnum) { SIGHT_ANYTHING[pnum] = 0; for(int i = 0;i < GG_PARAREL;i++) { SIGHT_GHOST[pnum][i] = 0; } }
+function void G_ClearSight(void) { for(int i = 0;i < G_PLAYERMAXWAS;i++) { G_ClearPlayerSight(i); } }
+function int G_GhostSeenCount(int ghost) { int count = 0; for(int i = 0;i < G_PLAYERMAXWAS;i++) { if(SIGHT_GHOST[i][ghost] > 0) { count++; }} return count; }

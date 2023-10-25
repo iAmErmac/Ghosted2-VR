@@ -1,0 +1,67 @@
+actor Page : CustomInventory 
+{
+	inventory.pickupmessage "Picked up a page"
+	inventory.pickupsound "Page/Pick"
+	+COUNTITEM
+	scale 0.45
+	height 32
+	radius 8
+	speed 5
+	states
+	{
+		Spawn:
+			PMSG A 0
+			PMSG A 0 A_Jump(40,"A","B","D","H")
+			PMSG A 0 A_Jump(200,"H","D","A","A","A","B","B","C","D","E","F","G","K")
+			PMSG A 0 A_Jump(1,"I","J")
+		A:
+			PMSG A -1 //bright
+			loop
+		B:
+			PMSG B -1
+			loop
+		C:
+			PMSG C 0 
+			PMSG CCC 700 A_SpawnItem("RVDG_Red_BloodFloorRandom") 
+			loop
+		D:
+			PMSG D -1 
+			loop
+		E:
+			PMSG E 0 
+			PMSG E 700 A_SpawnItem("RVDG_Red_BloodFloorRandom") 
+			loop
+		F:
+			PMSG F 0 
+			PMSG FF 700 A_SpawnItem("RVDG_Red_BloodFloorRandom") 
+			PMSG F 0 A_PlaySoundEx("Page/Whisper","soundslot5",0,0)
+			loop
+		G:
+			PMSG G 0 
+			PMSG G 700 A_SpawnItem("RVDG_Red_BloodFloorRandom") 
+			loop
+		H:
+			PMSG H -1
+			loop
+		I:
+			PMSG I -1
+			loop
+		J:
+			PMSG J 0 A_Wander 
+			PMSG J 40 A_SpawnItem("RVDG_Red_BloodFloorRandom")
+			PMSG J 0 A_Wander 
+			PMSG J 40 
+			PMSG J 0 A_Wander 
+			PMSG J 40 
+			PMSG J 0 A_Wander 
+			PMSG J 40
+			loop
+		K:
+			PMSG K 700 A_SpawnItem("RVDG_Red_BloodFloorRandom") 
+			loop
+		Pickup:
+			TNT1 A 0
+			TNT1 A 0 ACS_EXECUTEAlways(500,0,0)
+			stop
+	}
+}

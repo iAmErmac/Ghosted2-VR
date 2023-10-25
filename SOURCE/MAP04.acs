@@ -1,0 +1,95 @@
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_PAGES.acs"
+#import "G_MATH.acs"
+#import "G_TRACKER.acs"
+#import "G_GHOST.acs"
+#import "G_PLAYER.acs"
+#import "G_SIGHT.acs"
+#import "G_ENGINE.acs"
+#import "G_LIGHTS.acs"
+#import "G_MOD.acs"
+#import "G_NOISE.acs"
+#import "G_AI.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_SNOISE.acs"
+
+#library "MAP04"
+
+script 999 open
+{
+    G_PAGESCOUNT = 12;
+    G_PAGEMINSPOT = 1000;
+    G_PAGEMAXSPOT = 1021;
+    G_GHOSTTAG = 1350;
+    
+    G_GHOSTMIN = 9000;
+    G_GHOSTMAX = 9002;
+	
+	LIGHTS_SOFTWARE = 140;
+	LIGHTS_DARK = 40;
+	LIGHTS_BRIGHT = 120;
+}
+
+function void lightColor(int r,int g,int b,int inten) {
+    for(int i = 0;i < 10;i++) {
+        //Light_ChangeToValue(i,inten);
+        sector_setcolor(i,r,g,b,0);
+    }
+}
+
+
+script 995 open
+{
+    Light_ChangeToValue(666,666-666);
+    lightColor(50,60,150,40);
+	
+	
+    //lightColor(200,50,0,0);
+    
+    /*if(random(0,(playercount()*playercount())-1)!=0) {
+        terminate;
+    }*/
+    
+    delay(350);
+    
+   
+    while(PAGE_PICKED < 0) { delay(35); }
+    changefloor(666,"PENT1"); //lightColor(170,50,30,40);
+    while(PAGE_PICKED < 4) { delay(35); }
+    changefloor(666,"PENT2"); //lightColor(140,50,45,40);
+    while(PAGE_PICKED < 6) { delay(35); }
+    changefloor(666,"PENT3"); //lightColor(110,50,60,40);
+    while(PAGE_PICKED < 10) { delay(35); }
+    changefloor(666,"PENT4"); //lightColor(75,55,100,40);
+	
+	while(G_GAMEOVER == 0) {
+		delay(35);
+	}
+	changefloor(666,"PENT1");
+	
+	//TODO add more magical chance for this to happen
+	if(random(0,1 + PlayerCount()) == 0)
+		floor_lowerbyvalue(3,32,128);
+	
+    /*
+    if(playercount() > 3 && !(CheckActorInventory(PlayerTag(2),"G2_TheNightSoul") == 0 || CheckActorInventory(PlayerTag(1),"G2_TheNightSoul") == 0 || CheckActorInventory(PlayerTag(0),"G2_TheNightSoul") == 0)) {
+        terminate;
+    }
+
+    
+    while(PAGE_PICKED < 10) { delay(35); }
+    changefloor(666,"PENT5"); 
+    ThingSound(200,"Pent",127);*/
+    /*SetLineTexture(1000,SIDE_FRONT,TEXTURE_MIDDLE,"NLR");
+    SetLineTexture(1001,SIDE_FRONT,TEXTURE_BOTTOM,"NLR");
+    SetLineTexture(1001,SIDE_FRONT,TEXTURE_TOP,"NLR");
+    
+    delay(35 * 12);
+    SetLineTexture(1000,SIDE_FRONT,TEXTURE_MIDDLE,"NBRIX11");
+    SetLineTexture(1001,SIDE_FRONT,TEXTURE_BOTTOM,"NBRIX11");
+    SetLineTexture(1001,SIDE_FRONT,TEXTURE_TOP,"NBRIX11");*/
+    
+ //   NBRIX11
+}

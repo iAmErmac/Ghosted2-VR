@@ -1,0 +1,93 @@
+/*
+* Ghosted 2 Actors
+*
+* File: G2_Detectors
+*
+* Description: Sight detecting
+*/
+
+actor DetectorBase
+{
+	MONSTER
+	+FRIENDLY
+	+NOGRAVITY
+	+NOCLIP
+	+NOBLOCKMAP
+	-SOLID
+	-SHOOTABLE
+	+SERVERSIDEONLY //Again
+	+NOTARGET //It can't be target anyway
+	+NOTIMEFREEZE //Obviously but uselessly unless youre cheating
+	height 56
+	radius 2
+}
+
+actor Detector_GhostInSight : DetectorBase
+{
+	states
+	{
+		Spawn:
+		TNT1 A 0
+		TNT1 A 1 A_LookEx(LOF_NOSOUNDCHECK,25,4096, 0,110, "See") // 25
+		TNT1 A 0 ACS_ExecuteAlways(799,0,0, args[0], 0)
+		TNT1 A 0 ACS_ExecuteAlways(799,0,1, args[0], 0)
+		TNT1 A 0 ACS_ExecuteAlways(799,0,2, args[0], 0)
+		stop
+		See:
+		TNT1 A 0
+		TNT1 A 0
+		TNT1 A 0 ACS_ExecuteAlways(799,0,0, args[0], 1)
+		TNT1 A 0 A_JumpIfInventory("Shell",1,"See2")
+		TNT1 A 0 ACS_ExecuteAlways(799,0,1, args[0], 0)
+		TNT1 A 0
+		stop
+		Stalker:
+		TNT1 A 0
+		TNT1 A 0 ACS_ExecuteAlways(799,0,2, args[0], 1)
+		stop
+		See2:
+		TNT1 A 0
+		TNT1 A 0 ACS_ExecuteAlways(799,0,1, args[0], 1)
+		TNT1 A 0
+		stop
+		Die:
+		TNT1 A 0
+		TNT1 A 0
+		stop
+	}
+}
+
+actor Detector_GhostInSightNarrow : DetectorBase
+{
+	states
+	{
+		Spawn:
+		TNT1 A 0
+		TNT1 A 1 A_LookEx(LOF_NOSOUNDCHECK,25,6000, 0,4, "See")
+		TNT1 A 0 ACS_ExecuteAlways(798,0,args[0], args[1],0)
+		TNT1 A 0 //ACS_ExecuteAlways(798,args[0], args[1],0)
+		TNT1 A 0 //ACS_ExecuteAlways(798,args[0], args[1],0)
+		stop
+		See:
+		TNT1 A 0
+		//TNT1 A 0 ACS_ExecuteAlways(798,0,args[0], args[1],0)		
+		TNT1 A 0 ACS_ExecuteAlways(798,0,args[0], args[1],1)
+		TNT1 A 0
+		
+		//TNT1 A 0 A_JumpIfInventory("Shell",1,"See2")
+		stop
+		/*Stalker:
+		TNT1 A 0
+		TNT1 A 0 ACS_ExecuteAlways(798,0,2, args[0], 1)
+		stop
+		See2:
+		TNT1 A 0
+		TNT1 A 0 ACS_ExecuteAlways(798,0,1, args[0], 1)
+		TNT1 A 0
+		stop
+		Die:
+		TNT1 A 0
+		TNT1 A 0
+		stop*/
+	}
+}

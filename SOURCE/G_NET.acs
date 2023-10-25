@@ -1,0 +1,71 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+///////////////////////////////////////////////////////////////
+//G_NET.acs - Custom Comunication between client and servers //
+///////////////////////////////////////////////////////////////
+
+#include "zcommon.acs"
+
+#import "G_MATH.acs"
+#import "G_PLAYER.acs"
+#import "G_MAIN.acs"
+
+#library "G_NET"
+
+#define RESENDKEYSCRIPTNUM 821
+
+int NET_KEY = 0;
+
+/*
+* ...Let's write this down...
+*
+* Key that will be recieved by client...
+* Form: 0x87654321
+*
+* 1,2 = To whom the script is mean to be.. if the PNUM is 255, then everyone is supposed to be notified
+* 3,4,5,6,7,8 = Random transmition key to protect from clients trying to fake incoming/outcoming data :)
+*/
+
+//Generate key and send it!
+function void NET_Init(void) { NET_GenerateKey(); ACS_ExecuteAlways(859,0,NET_KEY,0,0); }
+function void NET_GenerateKey(void) { do { NET_KEY = random(-0x7FFFFFFF,0x7FFFFFFF); } while(NET_KEY == 0); NET_KEY = NET_KEY & 0xFFFFFF00; }
+function int NET_HasRecievedKey(void) { return NET_KEY != 0; }
+
+script 859 (int key) clientside { //Server can change the NET_KEY or resend it now
+	if(PlayerNumber() < 0) {
+		NET_KEY = key;
+		if(getcvar("g2_debug")) {
+			log(s:"Recieved data: NET_KEY");
+			//log(s:"NET_KEY:",d:key); // REMOVE ME
+		}
+	} else {
+		//log(s:"Unauthorized access for client: ",n:(PlayerNumber()+1));
+	}
+}
+
+script 860 (int arg1,int arg2,int key) net { 
+	if(arg1 == 0 && arg2 == 0 && !NET_CheckKey(key)) {
+		ACS_ExecuteAlways(859,0,NET_KEY,0,0);
+	}
+	
+	if(!NET_CheckKey(key)) {
+		terminate;
+	}
+}
+
+//Executing script on client :)
+function void NET_Server_SendToClient(int clientID,int scriptNum,int param1,int param2) { ACS_ExecuteAlways(440,0,scriptNum | (clientID << 16),param1,param2); }
+function void NET_Server_SendToAllClients(int scriptNum,int param1,int param2) { ACS_ExecuteAlways(440,0,(scriptNum | (255 << 16)),param1,param2); }
+script 440 (int snum,int arg1,int arg2) {
+	if(snum >> 16 != 255) {
+		SetActivator(PlayerTag((snum >> 16)));
+	}
+	ACS_ExecuteAlways(snum & 0x0000FFFF,0,arg1,arg2,NET_KEY |(snum >> 16));
+}
+
+function int NET_Client_SendToServer(int scriptNum,int param1,int param2) { return G_ClientCallServerScript(scriptNum,param1,param2,NET_KEY); }
+function int NET_Client_RequestKey(void) { return G_ClientCallServerScript(860,0,0,NET_KEY); }
+
+function int NET_CheckKey(int key) { return (key & 0xFFFFFF00) == (NET_KEY & 0xFFFFFF00);}
+function int NET_GetRecieverNumber(int key) { if(key & 0x000000FF > 64) { return ConsolePlayerNumber(); } return key & 0x000000FF; }

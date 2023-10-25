@@ -1,0 +1,281 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_AI.acs - Directs the ghosts and such    //
+//////////////////////////////////////////////
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_MATH.acs"
+#import "G_PAGES.acs"
+#import "G_GHOST.acs"
+#import "G_SIGHT.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_PLAYER.acs"
+#import "G_NET.acs"
+
+#library "G_AI" //GAAIIII!!!
+
+#define GG_PARAREL 10
+
+/*
+ * The idea was to make the ghosts smarter and managed, like a pieces on a chessboard... but the prototypes weren't ever created and the script would be slow in general..
+ * Also this script is quite slow on purpose... there is no reason to make it run "realtime".. althougth removing all ghosts after the end at once could be nice
+ */
+	// AI SCRIPT
+
+#define AI_DEFAULT_SPEED 2
+
+int AI_LARGESTCOUNT = 0;
+
+script 651 open {
+	delay(35);
+	
+	if(getcvar("G2_Debug") > 0) {
+		log(s:"AI: Ready!");
+	}
+	
+	while(1) {
+		int requested = AI_RequestedGhostCount();
+		
+		for(int i = 0;i < GG_PARAREL;i++) {
+			int test,spot = -1;
+			
+			if(!Ghost_IsSpawned(i) && requested <= i) {
+				delay(2);
+				continue;
+			} else if(Ghost_IsSpawned(i)) {
+				delay(3);
+				setactorproperty(GhostTag(i),APROP_SPEED, GHOST_CalculateSpeed(Ghost_Type(i),AI_DEFAULT_SPEED));
+				delay(1);
+				if(G_GhostSeenCount(i) > 0) {
+					giveactorinventory(GhostTag(i),"G2_LightBreaker",1);
+				} else {
+					takeactorinventory(GhostTag(i),"G2_LightBreaker",1);
+				}
+			}
+			
+			
+			
+			int closestGhost = G_ClosestGhostToGhost(GhostTag(i),i);
+			delay(2);
+			int closestPlayer = G_ClosestPlayer(GhostTag(i));
+			delay(2);
+			int seenCount = G_GhostSeenCount(i);
+			delay(2);
+			//log(d:i,s:"  Distance: ",f:manhattanDistanceFixed(GhostTag(closestGhost),GhostTag(i)),s:"  ",d:closestGhost);
+			if(random(0,900) == 0 && manhattanDistanceFixed(PlayerTag(closestPlayer),GhostTag(closestGhost)) > 3000.0
+				&& manhattanDistanceFixed(PlayerTag(closestPlayer),GhostTag(i)) > 1000.0
+				&& seenCount == 0) {
+				for(test = 0;test < 200;test++) {
+					spot = random(G_GHOSTMIN,G_GHOSTMAX);
+					if(manhattanDistanceFixed(PlayerTag(G_ClosestPlayer(spot)),spot) > 2222.0) {
+						break;
+					}
+					if(test % 10 == 0)
+						delay(1);
+				}
+				
+				for(test=0;test < 200 && !GHOST_TeleportTo(i,spot);test++) {
+					delay(10);
+				}
+			} else if(closestGhost >= 0 && seencount == 0 && getskill() < 4
+				&& manhattanDistanceFixed(GhostTag(closestGhost),GhostTag(i)) < 1000.0 
+				&& manhattanDistanceFixed(PlayerTag(closestPlayer),GhostTag(i)) < 2000.0
+				&& manhattanDistanceFixed(PlayerTag(closestPlayer),GhostTag(i)) > 400.0
+				&& (manhattanDistanceFixed(PlayerTag(closestPlayer),GhostTag(i)) < manhattanDistanceFixed(PlayerTag(closestPlayer),GhostTag(closestGhost))) ) {
+				for(test = 0;test < 200;test++) {
+					spot = random(G_GHOSTMIN,G_GHOSTMAX);
+					if(manhattanDistanceFixed(PlayerTag(G_ClosestPlayer(spot)),spot) > 2222.0) {
+						break;
+					}
+					if(test % 10 == 0)
+						delay(1);
+				}
+				
+				for(test=0;test < 200 && !GHOST_TeleportTo(i,spot);test++) {
+						delay(10);
+				}
+				//log(s:"Ghosts too close, teleporting away");
+			}
+			
+			if(i >= requested) {
+				//log(s:"Trying to despawn.....");
+				if(G_GAMEOVER != 0 || (Ghost_IsSpawned(i) && manhattanDistanceFixed(GhostTag(i),PlayerTag(closestPlayer)) > 1200.0 && seenCount == 0)) {
+					delay(1);
+					GHOST_Despawn(i);
+					
+					if(getcvar("G2_Debug") > 0) {
+						log(s:"AI: Ghost ",d:i,s:" has despawned (too many ghosts)");
+					}
+				}
+			} else { 
+				//log(s:"Ok");
+				
+				if(!Ghost_IsSpawned(i)) {
+					delay(1);
+
+					while(!GHOST_Spawn(GHOST_GetRandomGhostType(G_GHOSTSPAWNEDOLD[i]),i)) {
+						delay(15);
+					}
+					
+					if(GHOST_SpawnedCount() > AI_LARGESTCOUNT) {
+						NET_Server_SendToAllClients(863,2,GHOST_SpawnedCount());
+						AI_LARGESTCOUNT = GHOST_SpawnedCount();
+					}
+
+					if(getcvar("G2_Debug") > 0) {
+						log(s:"Sending Data: GHOST Spawned Count: ",d:GHOST_SpawnedCount());
+					}
+					
+					delay(5);
+
+					for(test = 0;test < 200;test++) {
+						spot = random(G_GHOSTMIN,G_GHOSTMAX);
+						if(manhattanDistanceFixed(PlayerTag(G_ClosestPlayer(spot)),spot) > 2222.0) {
+							break;
+						}
+						if(test % 10 == 0)
+							delay(1);
+					}
+					
+					for(test=0;test < 200 && !GHOST_TeleportTo(i,spot);test++) {
+						delay(10);
+					}
+
+					if(getcvar("G2_Debug") > 0) {
+						log(s:"AI: Ghost ",d:i,s:" targets player number ",d:closestPlayer);
+					}
+					
+					//AI_SetTargetPlayer(i,closestPlayer);
+					Thing_hate(GhostTag(i),PlayerTag(closestPlayer),0); //Forces the ghost to go to See state
+					
+					if(random(0,100) == 0) {
+						Spawnspot("G2_Ghost1",random(G_GHOSTMIN,G_GHOSTMAX),0,0);
+						delay(5);
+					}
+					//}
+				} else {
+					delay(5);
+					
+					if(random(0,130) == 0 && manhattanDistanceFixed(GhostTag(i),PlayerTag(closestPlayer)) > 1450.0 && seenCount == 0) {
+						GHOST_Despawn(i);
+						
+						if(getcvar("G2_Debug") > 0) {
+							log(s:"AI: Ghost ",d:i,s:" has despawned (switching ghosts)");
+						}
+					}
+				}
+			}
+			delay(2);
+		}
+		delay(10);
+	}
+}
+
+/* Pseudo code
+* If Ghostcount == playercount
+*	target one player per ghost;
+* else if Ghostcount > playercount
+*	target closest player 
+* else if GhostCount < playercount
+*   if ghostcount >= 2
+*		target 
+*	else 
+*		target closest player
+*/
+
+script 652 (int myid) { //"Requesting target" script //STILL UNUSED
+	int targetnum = G_ClosestPlayer(GhostTag(myid));
+	AI_SetTargetPlayer(myid,targetnum);
+	
+	if(getcvar("G2_debug652") > 0) {
+		log(s:"AI Target: Ghost ",d:myid,s:" requested target and got player: [",d:targetnum,s:"]\"",n:1+targetnum,s:"\"");
+	}
+}
+
+function void AI_SetTargetPlayer(int index,int pnum) { thing_hate(GhostTag(index),PlayerTag(pnum),3);  }
+
+/*
+function int AI_RequestedGhostCount(void) { 
+	if(GetCvar("G2_DynamicSkill") == 0) {
+		return AI_OldRequestedGhostCount();
+	}
+
+	if(PAGE_PICKED == 0) {
+		return 0;
+	} else if(PAGE_PICKED >= G_PAGESCOUNT && G_GAMEMODE == GAMEMODE_NORMAL) {
+		return 0;
+	}
+	
+	if(getCvar("G2_GhostCount") != 0) {
+		return clamp(0,GG_PARAREL,getCvar("G2_GhostCount"));
+	}
+	
+	int pcount = G_GetSurvivingPlayerCount();
+	int padd = 0;
+	int prat = Player_GetAverageWinLossRatio();
+	
+	
+	if(prat < 12.0) {
+		padd = 0;
+	} else if(prat < 20.0) {
+		padd = 1;
+	} else if(prat < 38.0) {
+		padd = 2;
+	} else if(prat < 54.0) {
+		padd = 3;
+	} else {
+		padd = 4;
+	}
+	
+	if(pcount > 6) {
+		padd += 1;
+	} else if(pcount > 14) {
+		padd += 2;
+	} else if(pcount > 22) {
+		padd += 3;
+	} else if(pcount > 30) {
+		padd += 4;
+	} else if(pcount > 40) {
+		padd += 5;
+	}
+	
+	int count = 1 + padd + (PAGE_PICKED / 20);
+	
+	log(d:prat,s:" :prat count: ",d:count);
+	
+	return clamp(0,GG_PARAREL,count);
+}
+*/
+
+function int AI_RequestedGhostCount(void) { 
+	if(PAGE_PICKED == 0) {
+		return 0;
+	} else if(PAGE_PICKED >= G_PAGESCOUNT && G_GAMEMODE == GAMEMODE_NORMAL) {
+		return 0;
+	}
+	
+	if(getCvar("G2_GhostCount") != 0) {
+		return clamp(0,GG_PARAREL,getCvar("G2_GhostCount"));
+	}
+	
+	int pcount = G_GetSurvivingPlayerCount();
+	int padd = 0;
+	if(pcount > 3) {
+		padd = 1;
+	} else if(pcount > 6) {
+		padd = 2;
+	} else if(pcount > 10) {
+		padd = 3;
+	} else if(pcount > 15) {
+		padd = 4;
+	} else if(pcount > 21) {
+		padd = 5;
+	}
+	
+	int count = 1 + padd + (PAGE_PICKED / 10);
+	
+	return clamp(0,GG_PARAREL,count);
+}

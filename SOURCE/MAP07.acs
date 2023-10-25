@@ -1,0 +1,41 @@
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_GHOST.acs"
+#import "G_SIGHT.acs"
+#import "G_PAGES.acs"
+#import "G_LIGHTS.acs"
+#import "G_MATH.acs"
+#import "G_TRACKER.acs"
+#import "G_MOD.acs"
+#import "G_PLAYER.acs"
+#import "G_NOISE.acs"
+#import "G_AI.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_ENGINE.acs"
+#import "G_SNOISE.acs"
+
+#library "MAP07"
+
+script 999 open {
+    G_PAGEMINSPOT = 300;
+    G_PAGEMAXSPOT = 351;
+    G_PAGESCOUNT = 8;
+    PAGE_APPARTING = 1536;
+    G_GHOSTMIN = 1000;
+    G_GHOSTMAX = 1005;
+}
+
+script 998 open {
+	delay(35);
+	
+	while(G_PAGESCOUNT / 4 >= PAGE_PICKED && G_GAMEOVER == 0) {
+		delay(100);
+	}
+	ChangeFloor(256,"PENT4");
+	
+	while(G_GAMEOVER == 0) {
+		delay(100);
+	}
+	ChangeFloor(256,"PENT1");
+}

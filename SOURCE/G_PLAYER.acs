@@ -1,0 +1,796 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_PLAYER.acs - Player stuff				//
+//////////////////////////////////////////////
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_SIGHT.acs"
+#import "G_NOISE.acs"
+#import "G_GHOST.acs"
+#import "G_MATH.acs"
+#import "G_PAGES.acs"
+#import "G_ENGINE.acs"
+#import "G_TRACKER.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_NET.acs"
+
+#library "G_PLAYER"
+
+#define GG_PARAREL 10
+
+int screamtick[64][GG_PARAREL];
+bool screamed[64][GG_PARAREL];
+int slendertick[64][GG_PARAREL];
+int facetick[64][GG_PARAREL];
+
+/*
+int PLAYER_RATIO[64];
+int PLAYER_DAMAGE[64];
+int PLAYER_PAGES[64];
+int PLAYER_LOGGEDIN[64];
+int PLAYER_LOWRATIO = -1;
+int PLAYER_HIGHRATIO = -1;
+
+
+int PLAYER_CLIENTSIDE_LOGIN = 0;
+int PLAYER_STOPLOGGING = 0;
+
+function int Player_GetAverageWinLossRatio(void) {
+	int ptotalrat=0,ptotalpc=0;
+	for(int i = 0;i < G_PLAYERMAXWAS;i++) { if(!PlayerIsAlive(i)) continue; ptotalrat += PLAYER_RATIO[i]; ptotalpc++; }
+	return fixeddiv(ptotalrat,ptotalpc<<16);
+}
+
+function void Player_LimitAverageWinLoss(void) { //The lowest ratio is the most dominant
+	for(int i = 0;i < G_PLAYERMAXWAS;i++) { if(!PlayerIsAlive(i)) continue; PLAYER_RATIO[i] = min(PLAYER_RATIO[i],PLAYER_LOWRATIO+5.0); }
+}
+*/
+/*
+script 759 enter clientside { //Login script!
+	delay(1);
+	if(!ENGINE_DESYNCACS) {terminate; }
+	if(PlayerIsBot(PlayerNumber())) {terminate; }
+	if(PlayerNumber() != ConsolePlayerNumber()) {terminate; }
+	
+	if(GetCvar("G2_Debug")) {
+		log(s:"Preparing to send player info");
+	}
+
+	int ratio = fixeddiv(max(1,getcvar("G2_ST_WIN")+1)<<16,max(1,getcvar("G2_ST_LOSE")+1)<<16);
+	int damage = getcvar("G2_ST_Damage");
+	int pages = getcvar("G2_ST_Pages");
+	
+	delay(2 * PlayerNumber());
+	while(!PLAYER_CLIENTSIDE_LOGIN) {	
+		G_ClientCallServerScript(758,ratio,damage,pages);
+		
+		if(GetCvar("G2_Debug")) {
+			log(s:"Sending statistics...");
+		}
+		
+		for(int i = 0;i < 5;i++) {
+			delay(5);
+			if(PLAYER_CLIENTSIDE_LOGIN) break;
+		}
+	}
+	
+	if(GetCvar("G2_Debug")) {
+		log(s:"Statistics have been sent");
+	}
+}
+
+script 757 (void) clientside {
+	if(PlayerNumber() != ConsolePlayerNumber()) terminate;
+	PLAYER_CLIENTSIDE_LOGIN = 1;
+}
+
+script 758 (int ratio,int damage,int pages) net {
+	if(PLAYER_RATIO[PlayerNumber()] != 0) terminate;
+
+	ACS_ExecuteAlways(757,0,0,0);
+	
+	if(damage < 0) { damage = 0; }
+	if(pages < 0) { pages = 0; }
+	if(ratio <= 0.0) { ratio = 1; } //set to smallest float point value above zero
+	else if(getcvar("G2_MaxRatio") != 0) {	
+		if(ENGINE_GETCVARFLOAT) {
+			if(ratio > GetCvar("G2_MaxRatio")) {
+				ratio = GetCvar("G2_MaxRatio");
+			}
+		} else {
+			if(ratio > GetCvar("G2_MaxRatio")<<16) {
+				ratio = GetCvar("G2_MaxRatio")<<16;
+			}
+		}
+	}
+	
+	if(PLAYER_LOWRATIO == -1) PLAYER_LOWRATIO = ratio;
+	else PLAYER_LOWRATIO = min(PLAYER_LOWRATIO,ratio);
+	
+	if(PLAYER_HIGHRATIO == -1) PLAYER_HIGHRATIO = ratio;
+	else PLAYER_HIGHRATIO = max(PLAYER_HIGHRATIO,ratio);
+	
+	PLAYER_RATIO[PlayerNumber()] = ratio;
+	PLAYER_DAMAGE[PlayerNumber()] = damage;
+	PLAYER_PAGES[PlayerNumber()] = pages;
+	
+	if(!PLAYER_STOPLOGGING)
+		PLAYER_LOGGEDIN[PlayerNumber()] = 1;
+	
+	if(GetCvar("G2_Debug") == 1) {
+		log(s:"Data recieved:  Player: ",n:0,s:"  Win/Loss Ratio: ",f:ratio,s:"  Damage: ",d:damage,s:"  Pages: ",d:pages);
+	}
+}*/
+
+#define PLAYER_FS_SIZE 35 //Keep precise to array size to avoid pointless lags... This makes no difference but making millions of those differences matters
+#define PLAYER_FS_VOLUME 25 //the Terrain pack footsteps are half the volume of the buttpain.pk3 footsteps.. so the buttpain.pk3 has 1/2 of volume
+
+//Be warned that more the stupid custom footsteps the slower the script.. so avoid if possible
+
+int footsteps[PLAYER_FS_SIZE][2] = {
+	{0,"Footsteps/default"},
+	
+	{"SNOW2","Footsteps/snow"},
+	{"SNOW3","Footsteps/snow"},
+	{"SNOW1","Footsteps/snow"},
+	
+	{"PENT1","Footsteps/snow"},
+	
+	{"GRASS2","FootSteps/Dirt"},
+	{"GRASS3","FootSteps/Dirt"},
+	{"RROCK16","Footsteps/dirt"},
+	{"TASPFL0","Footsteps/dirt"},
+	{"TDRTFL03","Footsteps/dirt"},
+	
+	{"TDCMWL02","Footsteps/metal"},
+	{"TDCMWL05","Footsteps/metal"},
+	{"TFLRFL05","Footsteps/metal"},
+	{"TGRTFL0","Footsteps/metal"},
+	{"TLIGWL1B","Footsteps/metal"},
+	{"TLIGWL1D","Footsteps/metal"},
+	{"TMLPWL08","Footsteps/metal"},
+	{"NMETL1","Footsteps/metal"},
+	{"NMETAL1","Footsteps/metal"},
+	
+	{"FLOOR0_2","FootSteps/Tile"},
+	{"NFLAT8B","FootSteps/Tile"},
+	{"NFLAT8A","FootSteps/Tile"},
+	{"NFLAT3B","FootSteps/Tile"},
+	{"TMARFL0","FootSteps/Tile"},
+	{"NFQUAD1B","FootSteps/Tile"},
+	{"NFQUAD1C","FootSteps/Tile"},
+	{"NHEXY1A","FootSteps/Tile"},
+	{"TMRBFL08","FootSteps/Tile"},
+	
+	
+	
+	{"NRUBBL2A","Footsteps/rock"},
+	{"ROCK1","Footsteps/rock"},
+	{"ROCK2","Footsteps/rock"},
+	{"ROCK3","Footsteps/rock"},
+	{"TMAYWL16","Footsteps/rock"},
+	{"TRCKWL01","Footsteps/rock"},
+	
+	{"FLAT5_5","Footsteps/Carpet"},
+};
+
+function int PLAYER_FootStep(int vol) {
+	for(int i = 1;i < PLAYER_FS_SIZE;i++) { if(CheckActorFloorTexture(0,footsteps[i][0])) { ActivatorSound(footsteps[i][1],vol);return 0; } }
+	ActivatorSound(footsteps[0][1],vol/2);
+	return 0;
+}
+
+function int PLAYER_DrawBlood(int time) {
+	//if(!ENGINE_HUDMSGUPGRADE) return 1;
+	int spotx; 
+	int spoty; 
+	int scale = random(0.9,2.0);
+	int hudx = fixedmul(1900.0,scale)>>16;
+	int hudy = fixedmul(1200.0,scale)>>16;
+	sethudsize(hudx,hudy,0);
+	setfont(strparam(s:"BLOD",d:random(1,3)));
+	
+	if(!ENGINE_HUDMSGUPGRADE) {
+		spotx = pick(random(0.0,10.0),(hudx<<16) - random(0.0,10.0));
+		spoty = pick(random(0.0,10.0),(hudy<<16) - random(0.0,10.0));
+		hudmessage(s:"A";HUDMSG_FADEINOUT,0,CR_RED, spotx , spoty ,time,0.2,5.0,random(0.1,0.35));
+	} else {
+		spotx = pick(random(0.0,70.0),(hudx<<16) - random(0.0,70.0));
+		spoty = pick(random(0.0,70.0),(hudy<<16) - random(0.0,70.0));
+		hudmessage(s:"A";HUDMSG_FADEINOUT | HUDMSG_ALPHA ,0,CR_RED, spotx , spoty ,time,0.2,5.0,random(0.1,0.35));
+	}
+	
+	return 0;
+}
+
+#define PLAYER_STEPCOUNTER 6.25 //2.0.2 -> 5.25
+#define PLAYER_VELMUL 0.225
+#define PLAYER_VELLIMITMUL 2.1
+
+//Steps script
+script 552 enter {
+	int stepcounter = 0;
+	int flying = 0;
+	
+	int gap = 24.0;
+	int fallgap = 1.0;
+	int walkinggap = 5.0;
+	
+	delay(10);
+	
+	while(getactorproperty(0,APROP_HEALTH) > 0) {
+		
+		//JUMP AND LAND
+		if(!isZandronum() || (getcvar("compat_clientsendfullbuttoninfo") > 0 || gametype() == GAME_SINGLE_PLAYER) )
+		if(flying == 0 && ((GetPlayerInput(-1,INPUT_BUTTONS) & BT_JUMP == 1) || GetActorZ(0) - GetActorFloorZ(0) >= gap)) {
+			flying = 1;
+			Player_FootStep(PLAYER_FS_VOLUME);
+		} else if((flying == 1 && GetActorZ(0) - GetActorFloorZ(0) < fallgap)) {
+			Player_FootStep(PLAYER_FS_VOLUME);
+			stepcounter = 0;
+			flying = 0;
+		}
+		
+		//printbold(f:stepcounter);
+		//WALKING
+		if(flying == 0) {
+			stepcounter += fixedmul(GetQuickVelocityXY(0),PLAYER_VELMUL);
+
+			if(stepcounter >= PLAYER_STEPCOUNTER + fixedmul(GetQuickVelocityXY(0),PLAYER_VELLIMITMUL) ) {
+				stepcounter -= PLAYER_STEPCOUNTER + fixedmul(GetQuickVelocityXY(0),PLAYER_VELLIMITMUL);
+				if(GetActorZ(0) - GetActorFloorZ(0) < walkinggap) {
+					PLAYER_FootStep(PLAYER_FS_VOLUME);
+				}
+			}
+		}
+		delay(1);
+	}
+}
+
+// Resets all Server side player scripts (Steps and the main player torment script
+script 551 respawn { ACS_ExecuteAlways(550,0,0,0); ACS_ExecuteAlways(552,0,0,0); }
+
+#define PSPEED_NORMAL 0.45
+#define PSPEED_SLOW 0.30
+
+#define PTURN_ANGLE 0.1 //Max angle by which the ghost can turn you around
+#define PTURN_LARGEANGLE 0.65 //Large angle by which the player turns around
+#define PTURN_LARGEDELAY 150
+
+#define PSNOISESOUNDTICKMAX 100
+
+int PLAYER_HURTTICK[64][GG_PARAREL];
+
+script 550 enter //This script does everything necesary for player
+{
+	if(isTitlemap()) { terminate; }
+	
+	int healingtick = 0;
+	int healthprev = 0;
+	int killerId = -1;
+	
+	int snoisesoundtick = 0;
+	
+	thing_changetid(0,PLAYERTAGSTART + PlayerNumber());
+	
+	delay(1);
+	
+	//To inform clientside scripts to flip into holiday spirits! :) (This turns rain into snow, will do more perhaps)
+	if(GetCvar("G2_Festive") > 0) giveInventory("G2_Festive",1);
+	else takeInventory("G2_Festive",1);
+	
+	
+	//Clear internal things :(
+	TakeInventory("G2_SawGhost",1);
+	TakeInventory("G2_UseSNSound",100);
+	TakeInventory("G2_Glitching",100);
+	
+	GiveInventory("BatteryPower",30000);
+	GiveInventory("Backpack",1); //TODO: CHECK IF THIS DOESN'T BREAK ANYTHING !!!
+	
+    while(GetActorProperty(0,APROP_Health) > 0) {
+	
+		//For hud! To change into that darn red battery...
+		if(checkInventory("batterypower") == 0) {
+			if(checkInventory("G2_EmptyBattery") == 0)
+				giveInventory("G2_EmptyBattery",1);
+		} else {
+			if(checkInventory("G2_EmptyBattery") == 1)
+				takeInventory("G2_EmptyBattery",1);
+		}
+		
+		if(snoisesoundtick > 0) {
+			snoisesoundtick--;
+		}
+		
+		setInventory("G2_UseSNSound",snoisesoundtick/10); //Divided by 10 to make server not send small changes
+	
+		for(int nei = 0;nei < GG_PARAREL;nei++) {
+			/*if(!Ghost_IsSpawned(nei)) //Didn't work for some reason.. but would be nice if it did :(
+				continue;*/
+				
+			//This is necesary to inform clientside noise script that player sees ghost!
+			if(SIGHT_GHOST[PlayerNumber()][nei] > 0) {
+				if(checkInventory("G2_SawGhost") == 0)
+					giveInventory("G2_SawGhost",1);
+				if(Ghost_Type(nei) == 0) { //Hardcoded Slenderman's glitchy vision
+					setInventory("G2_Glitching",max(1,(2048 - distance(0,GhostTag(nei))) / 195)); //200 previous
+					
+					if(snoisesoundtick <= PSNOISESOUNDTICKMAX) {
+						snoisesoundtick+=3;
+					}
+				}
+			} else if(G_PlayerSeesSomething(PlayerNumber()) == 0) {
+				if(checkInventory("G2_SawGhost") == 1)
+					takeInventory("G2_SawGhost",1);
+				if(Ghost_Type(nei) == 0) //Hardcoded Slenderman's glitchy vision
+					setInventory("G2_Glitching",0);
+			}
+		
+			if(PLAYER_HURTTICK[PlayerNumber()][nei] == 0 && SIGHT_GHOST[PlayerNumber()][nei] > 0 && GHOSTSIGHTHURT[GHOST_Type(nei)] && distance(0,GhostTag(nei)) >= 175) { //This hurts player when he stares at ghosts who are "sight hurting"
+				if(healingtick > 100) {
+					healingtick = 100;
+				} else if(healingtick > 75) {
+					healingtick+=2 + (getSkill()/2);
+				} else if(healingtick > 20){
+					healingtick+=9 + (getSkill()/2);
+				} else {
+					healingtick += 30;
+				}
+				
+				if(getactorproperty(0,APROP_HEALTH) < 10) {
+					Thing_Damage(0, max(0,random(-1,1)) ,MOD_UNKNOWN);
+				} else {
+					Thing_Damage(0, max(0,random(-1,1+getSkill()+(getskill()/2))) ,MOD_UNKNOWN);
+				}
+				PLAYER_HURTTICK[PlayerNumber()][nei]+=max(0,(distance(0,GhostTag(nei))/100) - 2);
+			} else if(PLAYER_HURTTICK[PlayerNumber()][nei] > 0) {
+				PLAYER_HURTTICK[PlayerNumber()][nei]--;
+			}
+			
+			if(SIGHT_GHOST[PlayerNumber()][nei] > 0 && GHOSTSIGHTSOUND[GHOST_Type(nei)]!="NONE") { //when you see ghost that has eye sight sound.. it happends once a while and in certain distance
+				if(slendertick[PlayerNumber()][nei] == 0) {
+					int volume = 127;
+					if(distance(0,G_GHOSTTAG + nei) > GHOSTSIGHTSNDDIST[GHOST_Type(nei)]) {
+						volume = 0;
+					} else {
+						FaceActor(0,G_GHOSTTAG + nei);
+						FaceActor(G_GHOSTTAG + nei,0);
+					}
+					if(volume != 0) {
+						localambientsound(GHOSTSIGHTSOUND[GHOST_Type(nei)],volume);
+						localambientsound(GHOSTSIGHTSOUND[GHOST_Type(nei)],volume/2);
+						//ActivatorSound(GHOSTSIGHTSOUND[GHOST_Type(nei)],50);
+					}
+					slendertick[PlayerNumber()][nei] += GHOSTSIGHTSNDDELAY[GHOST_Type(nei)];
+				}
+			}
+			
+			//Reseting ticks for eye sight sound
+			if(slendertick[PlayerNumber()][nei] > 0 && G_PlayerSeesGhost(PlayerNumber(),nei) == 0 && (!GHOST_IsSpawned(nei) || distance(0,G_GHOSTTAG + nei) > (GHOSTSIGHTSNDDIST[Ghost_Type(nei)]/2) )) {
+				slendertick[PlayerNumber()][nei]--;
+			}
+			
+			//Close encounter with ghost, damage+screaming the ghost!!! //G_GHOSTVISIBLE == 1
+			if(distance(0,GhostTag(nei)) < 175 && ( distance(0,GhostTag(nei)) < 60 || (SIGHT_GHOST[PlayerNumber()][nei] > 0)) && Ghost_IsSpawned(nei) && screamed[PlayerNumber()][nei] == false) {
+				if(screamed[PlayerNumber()][nei] == false && screamtick[PlayerNumber()][nei] == 0 && GHOSTSCREAMSOUND[GHOST_Type(nei)] !="NONE") {
+					LocalAmbientSound(GHOSTSCREAMSOUND[GHOST_Type(nei)],80);
+					AmbientSound(GHOSTSCREAMSOUND[GHOST_Type(nei)],20);
+					//ActivatorSound(GHOSTSCREAMSOUND[GHOST_Type(nei)],80);
+					screamed[PlayerNumber()][nei] = true;
+					SetActorProperty(0,APROP_SPEED,PSPEED_SLOW);
+				}
+				if(GHOSTNODAMAGE[GHOST_Type(nei)] == 0) {
+					Thing_Damage(0,random(0,2+GHOSTDAMAGER[Ghost_Type(nei)]+getSkill()+(getskill()/2)),MOD_UNKNOWN);
+					
+					if(healingtick > 100) {
+						healingtick = 100;
+					} else if(healingtick > 75) {
+						healingtick+=2 + (getSkill()/2);
+					} else if(healingtick > 20){
+						healingtick+=9 + (getSkill()/2);
+					} else {
+						healingtick += 30;
+					}
+				}
+				//Scream delay to avoid constant ear rape from the scream sounds
+				screamtick[PlayerNumber()][nei] = GHOSTSCREAMDELAY[GHOST_Type(nei)]; 
+			} else {
+				//Heals player if he has no heal dealy and less than hundrer health
+				if(GetActorProperty(0,APROP_Health) < 100 && healingtick < 1 && nei == 0) { //TODO: why is this code in here?
+					SetActorProperty(0,APROP_Health,GetActorProperty(0,APROP_Health) + 1);
+					healingtick+=10 + ( getSkill() * 9 );
+				}
+				if(healingtick > 0 && nei == 0) { //countdown to regeneration
+					if(abs(getactorvelx(0))+abs(getactorvely(0)) < 0.05) {
+						healingtick-=2*(5-getskill());
+						
+					}
+					healingtick = max(0,healingtick-1);
+					//log(s:"Healing tick: ",d:healingtick,s:"  ",d:abs(getactorvelx(0))+abs(getactorvely(0)) < 0.05);
+				}
+				screamed[PlayerNumber()][nei] = false; 
+				//sets player's speed.. new Zandronum should avoid sending this when it doesn't change anything
+				SetActorProperty(0,APROP_SPEED,PSPEED_NORMAL); 
+			}
+			
+			//if(nei == 0) log(d:facetick[PlayerNumber()][nei]); // DEBUG
+			
+			//Turns you towards ghost if the ghost is allowed to do so //G_GHOSTVISIBLE == 1 
+			if(distance(0,G_GHOSTTAG + nei) < 100 && thingcount(0,G_GHOSTTAG + nei) > 0 && GHOSTFACER[GHOST_Type(nei)] == 1) {
+				SIGHT_GHOST[PlayerNumber()][nei] = 1;
+				if(facetick[PlayerNumber()][nei] <= PTURN_LARGEDELAY && G_GHOSTSPAWNED[nei] != -1) {
+					//FaceActor(0,G_GHOSTTAG + nei);
+					
+					if(facetick[PlayerNumber()][nei] == 0)
+						SetActorAngle(0,angle_TurnTo(GetActorAngle(0),GetTargetAngle(0,GhostTag(nei)),PTURN_LARGEANGLE));
+					else
+						SetActorAngle(0,angle_TurnTo(GetActorAngle(0),GetTargetAngle(0,GhostTag(nei)),PTURN_ANGLE));
+					
+					FaceActor(GhostTag(nei),0);
+					
+					
+					facetick[PlayerNumber()][nei] += (PTURN_LARGEDELAY-facetick[PlayerNumber()][nei]) + GHOSTFACEDELAY[Ghost_Type(nei)];
+				}
+			}
+			
+			//Counting down before you can get force turned to ghost in close encounter
+			if(facetick[PlayerNumber()][nei] > 0) { 
+				facetick[PlayerNumber()][nei]--;
+			}
+			
+			//Scream tick countdown, to allow another close encounter scream
+			if(screamtick[PlayerNumber()][nei] > 0) { 
+				screamtick[PlayerNumber()][nei]--;
+			}
+			
+			//TODO: try disabling manhattanDistanceFixed
+			if(killerId < 0 && getActorProperty(0,APROP_HEALTH) <= 0 && Ghost_IsSpawned(nei) && manhattanDistanceFixed(GhostTag(nei),0) < 2000.0) { 
+				killerId = nei;
+			}
+		}
+		
+		//This gives inventory that is checked for in A_JumpIfInventory inside actor Flashlight ... goes to low quality version of the lighting.. sometimes usefull :)
+		if(getCvar("G2_CheapFlashLight") > 0 && playerCount() >= getCvar("G2_CheapFlashLight")) {
+			setInventory("G2_LQLow",1);
+		} else {
+			setInventory("G2_LQLow",0);
+		}
+		
+		
+		
+		// Damage counter and previous health comparision
+		if(healthprev > getActorProperty(0,APROP_HEALTH)){  //Increases taken damage counter
+			if( (healthprev-getactorproperty(0,APROP_HEALTH)) > 10 || (getactorproperty(0, APROP_HEALTH) <= 90 && random(0,3) == 0) ) {
+				PLAYER_DrawBlood(10.0);
+			}
+			
+			if((healthprev-getactorproperty(0,APROP_HEALTH)) < 1000) {
+				S_DAMAGE[PlayerNumber()]+=(healthprev-getactorproperty(0,APROP_HEALTH));
+			}
+		}
+		healthprev = getActorProperty(0,APROP_HEALTH);
+		
+		delay(2);
+		if(GHOST_TypeCount(0) == 0) {
+			takeInventory("G2_Glitching",1);
+			takeInventory("G2_UseSNSound",1);
+		}
+		delay(1);
+    }
+	
+	
+	if(killerId >= 0 && (getcvar("G2_Notify")>0 || getcvar("G2_Debug"))) {
+		log(n:0,s:" was killed by ",s:GHOSTNAMES[Ghost_Type(killerId)]);
+	} 
+	
+	//TODO FIX DIS
+	TRACKER_Server_KilledPlayer(killerId);
+	G_Screamer(killerId); //FIXME
+	
+	if(healthprev < getActorProperty(0,APROP_HEALTH)) {
+		healthprev = getActorProperty(0,APROP_HEALTH);
+	} else if(healthprev > getActorProperty(0,APROP_HEALTH)){
+		if((healthprev-getactorproperty(0,APROP_HEALTH)) < 1000) {
+			S_DAMAGE[PlayerNumber()]+=(healthprev-getactorproperty(0,APROP_HEALTH));
+			healthprev = getActorProperty(0,APROP_HEALTH);
+		}
+	}
+	
+	takeInventory("G2_SawGhost",1);
+	takeInventory("G2_Glitching",100);
+	takeInventory("G2_UseSNSound",100);
+	
+	if((timer() % 35) > 9) {
+		S_TIMEDEATH[PlayerNumber()] = timer()-S_STARTTIME;
+	}
+	
+	int lastpage = PAGE_GetLastPageTID(); //TODO: Need to fix this ugly function and code...
+	
+	if(killerId >= 0 && lastpage != 0 && distance(lastpage,0) < 500) {
+		NET_Server_SendToClient(PlayerNumber(),863,5,killerId);
+	}
+	
+	for(int ai = 0;ai < GG_PARAREL;ai++) SIGHT_GHOST[PlayerNumber()][ai] = 0;
+}
+
+
+function void G_Screamer(int killerIndex) {
+	if(killerIndex >= 0 && GHOSTKILLFACE[G_GHOSTSPAWNED[killerIndex]] != "null") {
+			
+		sethudsize(320*2,200*2,0);
+		setfont(GHOSTKILLFACE[G_GHOSTSPAWNED[killerIndex]]);
+			
+		if(distance(0,G_GHOSTTAG + killerIndex) < 1000) {
+			hudmessage(s:"A";HUDMSG_FADEOUT,0,0,320.0,200.0,random(0.2,0.6));
+				
+			if(GHOSTKILLSOUNDDELAY != 0) {
+				localambientsound(GHOSTKILLSOUND[GHOST_Type(killerIndex)],random(117,127)); //FIX ME
+			}
+		}
+	}
+	
+	if(GHOSTKILLSOUNDDELAY == 0) {
+		if(killerIndex >= 0 && distance(0,G_GHOSTTAG + killerIndex) < 1000 && random(0,2) == 0) {
+			ambientsound(GHOSTKILLSOUND[GHOST_Type(killerIndex)],random(117,127)); //FIX ME
+			GHOSTKILLSOUNDDELAY += 3;
+		} else {
+			ambientsound("Player/Death",random(117,127));
+			GHOSTKILLSOUNDDELAY += 3;
+		}
+	}
+}
+
+/* ================= Granynoise Scripts ================ */
+
+script 755 respawn clientside {
+	ACS_ExecuteAlways(752,0,0,0); // GRAYNOISE
+	ACS_ExecuteAlways(754,0,0,0); // SNVISUALS
+	ACS_ExecuteAlways(739,0,0,0); // SNSOUND volume control
+	ACS_ExecuteAlways(740,0,0,0); // SNSOUND core
+}
+
+// How slowly the noise level should change
+
+
+#define TID_RAIN 8000
+#define TID_FOG 8001	
+
+#define HID_EFFECTS 6650
+#define HID_EFFECT_RAIN 6649
+#define HID_EFFECT_FOG 6648
+#define HID_EFFECT_NOISESCALE 6647
+#define HID_EFFECT_NOISELIMIT 6646
+#define HID_EFFECT_SNOISEDISTORT 6645
+#define HID_EFFECT_CURSOR 6640
+
+int EffectsMenuEnabled = 0;
+
+script 720 (void) net clientside {
+	if(ConsolePlayerNumber() != PlayerNumber()) terminate;
+	
+	EffectsMenuEnabled = !EffectsMenuEnabled;
+	if(!EffectsMenuEnabled) {
+		delay(10);
+	} else {
+		ACS_ExecuteAlways(721,0,0,0,0);
+	}
+}
+
+script 721 (void) clientside {
+	if(ConsolePlayerNumber() != PlayerNumber()) terminate;
+	
+	//ACS_Terminate();
+	
+	int selection = 0;
+	
+	while(EffectsMenuEnabled) {		
+		SetHudSize(800,600,0);
+		SetFont("ACHBG");
+		hudmessage(s:"a";HUDMSG_FADEOUT,HID_EFFECTS,CR_WHITE,400.0,300.0,0.35);
+		SetFont("smallfont");
+		hudmessage(s:"Rain: ",s:Condition(getcvar("G2_Rain"),strparam(s:"\cdEnabled"),strparam(s:"\cgDisabled"));HUDMSG_FADEOUT,HID_EFFECT_RAIN,CR_WHITE,300.0,110.0,0.35);
+		hudmessage(s:"Fog: ",s:Condition(getcvar("G2_Fog"),strparam(s:"\cdEnabled"),strparam(s:"\cgDisabled"));HUDMSG_FADEOUT,HID_EFFECT_FOG,CR_WHITE,300.0,130.0,0.35);
+		hudmessage(s:"Noise limit: \cd",d:max(0,getcvar("G2_GNLIMIT"));HUDMSG_FADEOUT,HID_EFFECT_NOISELIMIT,CR_WHITE,300.0,150.0,0.35);
+		hudmessage(s:"Noise scale: \cd",
+		s:Condition(getcvar("G2_GNScale") == 0,strparam(s:"\cdNone"),
+			Condition(getcvar("G2_GNScale") == 1,strparam(s:"\cd1600x1200"),
+				Condition(getcvar("G2_GNScale") == 2,strparam(s:"\cd800x600"),strparam(s:"\cg320x200"))));HUDMSG_FADEOUT,HID_EFFECT_NOISESCALE,CR_WHITE,300.0,170.0,0.35);
+		hudmessage(s:"Super Noise Camera Distortion: ",s:Condition(!getcvar("G2_SN_DisableDistortions"),strparam(s:"\cdEnabled"),strparam(s:"\cgDisabled"));HUDMSG_FADEOUT,HID_EFFECT_SNOISEDISTORT,CR_WHITE,300.0,190.0,0.35);
+		
+		//hudmessage(s:">",s:Condition(!getcvar("G2_SN_DisableDistortions"),strparam(s:"\cdEnabled"),strparam(s:"\cgDisabled"));HUDMSG_FADEOUT,HID_EFFECT_CURSOR,CR_RED,250.0,110.0 + fixedmul(20.0,selection),0.35);
+		
+		/*if(selection > 4) {
+			selection = 0;
+		} else if(selection < 0){
+			selection = 4;
+		}
+		
+		if(getplayerinput(-1,INPUT_BUTTONS) & BT_BACK > 0) {
+			selection++;
+		}
+		
+		if(getplayerinput(-1,INPUT_BUTTONS) & BT_FORWARD > 0) {
+			selection--;
+		}
+		
+		if(getplayerinput(-1,INPUT_BUTTONS) & BT_USE > 0) {
+			localambientsound("Ghosted2/Menu/Click",80);
+		}*/
+		
+		delay(1);
+	}
+	localambientsound("Ghosted2/Menu/Fade",80);
+}
+
+script 752 enter clientside //Gray Noise Script
+{
+	if(isTitlemap()) { terminate; }
+	if(consoleplayerNumber() != playernumber()) { terminate; }
+	if(PlayerIsBot(PlayerNumber())) { terminate; }
+	
+	ENGINE_Init();
+
+	//Testcolor doesn't work with cheats.. thanks for that reminder Klofkac
+	if(ENGINE_ConsoleCommand > 0 && ENGINE_DESYNCACS == 0) {
+		ConsoleCommand("testcolor FFFFFF 0");
+	}
+
+    int levelofnoise = 0;
+	int currentnoise = 0;
+	
+	int fadto;
+	int fad;
+	int i;
+	
+	delay(5);
+	saveCvar("G2_STATUS",1);
+	
+	int rainUsed = -1;
+	int fogUsed = -1;
+	//int festiveUsed = checkInventory("G2_Festive");
+	
+	int hurttime = 0;
+	int prevhp = 0;
+	
+    while(GetActorProperty(0,APROP_HEALTH) > 0) {
+		rainUsed = FX_RainSettings(rainUsed,GetCvar("G2_RAIN"));
+		fogUsed = FX_FogSettings(fogUsed,GetCvar("G2_FOG"));
+		//NOISE Rendering
+		levelofnoise = NOISE_Ghost(NOISE_SoftLimit(NOISE_CalculateBasic(hurttime)));
+		//fad = NOISE_InterpolateFade(fad,NOISE_CalculateFade(levelofnoise));
+		fad = NOISE_CalculateFade(levelofnoise);
+		levelofnoise = NOISE_Limit(levelofnoise);
+		currentnoise = NOISE_Interpolate(currentnoise,levelofnoise);
+		//log(d:NOISE_CalculateBasic(),s:" -> ",d:NOISE_SoftLimit(NOISE_CalculateBasic()),s:" -> ",d:currentnoise,s:" : ",f:fad);
+		
+		if(checkInventory("G2_SawGhost")) {
+			if(hurttime < 100)
+			hurttime+=2;
+		} else if(hurttime > 0) {
+			hurttime--;
+		}
+		
+		if(prevhp > getactorproperty(0,APROP_HEALTH)){
+			hurttime += 5 * (prevhp - getactorproperty(0,APROP_HEALTH));
+			if(hurttime > 350) {
+				hurttime = 350 + ((hurttime - 350) / 10);
+			}
+		}
+		prevhp = getactorproperty(0,APROP_HEALTH);
+		
+		//log(d:hurttime);
+		
+		NOISE_Render(currentnoise/2,fad);
+		
+		
+		
+		//Additive lightning warning
+		if(getcvar("vid_renderer") > 0) {
+			while( getcvar("gl_lights_additive") != 0) {
+				saveCvar("gl_lights_additive",0);
+				if( getcvar("gl_lights_additive") != 0) {
+					fadeto(1,1,1,0.99,1.0);
+					setfont("BIGFONT"); sethudsize(800,600,0);
+					hudmessage(s:"Please disable additive lighting\n\"Options -> display -> opengl -> dynamic lighting -> force additive lightning: no\"";HUDMSG_FADEOUT,5,CR_RED,400.0,300.0,0.01);
+				}
+				delay(6);
+			}
+			
+			/*while(getCvar("gl_lights_size") < 0.9 || getCvar("gl_lights_size") > 1.15) {
+				if(ENGINE_CONSOLECOMMAND) {
+					consolecommand("gl_lights_size 1.0");
+				}
+				if( getcvar("gl_lights_size") != 1.0) {
+					fadeto(1,1,1,0.99,1.0);
+					setfont("BIGFONT"); sethudsize(800,600,0);
+					hudmessage(s:"Please set gl_lights_size to 1 \n\"Options -> display -> opengl -> dynamic lighting -> light size: 1.0\"";HUDMSG_FADEOUT,5,CR_RED,400.0,300.0,0.01);
+				}
+				delay(6);
+			}*/
+		}	
+        delay(1);
+    }
+	
+	saveCvar("G2_STATUS",2);
+	fadeto(0.0,0.0,0.0,0.0,0.2);
+	sethudsize(800,600,0);
+	setfont("UADEAD");
+	
+	if(GameType() == GAME_SINGLE_PLAYER) {
+		hudmessage(s:"A";HUDMSG_FADEINOUT,0,0,400.0,300.0,1.5);
+	} else {
+		hudmessage(s:"A";HUDMSG_FADEINOUT,0,0,400.0,300.0,6.0);
+	}
+	
+	if(getCvar("G2_Launched") > 100 && random(0,1000) == 0) {
+		setfont("CONFONT"); hudmessage(s:"You don't say???";HUDMSG_FADEINOUT,0,CR_WHITE,480.0,390.0,3.0);
+	}
+	
+	if(ENGINE_CONSOLECOMMAND > 0 && ENGINE_DESYNCACS == 0) {
+		ConsoleCommand("testcolor FF6666 210");
+	}
+	
+	//When player died under 10 seconds.. let's asume that he is spawn telefraged
+	while(timer()/35 < 10) {
+		if(GetActorProperty(0,APROP_HEALTH) > 0) terminate;
+		delay(35);
+	}
+	
+	if(GetActorProperty(0,APROP_HEALTH) > 0) terminate;
+	
+	if(GameType() == GAME_SINGLE_PLAYER || (getCvar("survival") > 0 && GetPlayerLivesLeft(PlayerNumber()) <= 0)) {
+		for(int di = 0;di < 500;di++) {
+			Light_RaiseByValue(di,128);
+			
+			//TODO decide how to exactly allow these!
+			if(ENGINE_DESYNCACS > 0 || GameType() == GAME_SINGLE_PLAYER) {
+				Sector_SetColor(di,255,90,90,210); //Zandronum is ass with this >_<
+			}
+		}
+	}
+	
+	PLAYER_DrawBlood(10.0);
+	PLAYER_DrawBlood(9.0);
+	PLAYER_DrawBlood(8.0);
+	PLAYER_DrawBlood(7.0);
+	PLAYER_DrawBlood(6.0);
+	
+	if(!IsZandronum() || GameType() == GAME_SINGLE_PLAYER) { //When using Survival gamemode with Zandronum, the script ended before the tip could appear.
+		delay(35);
+	}
+	
+	G_ShowRandomTip();
+	G_DisplayBorders(HUDMSG_FADEINOUT,7.0);
+}
+
+function int FX_RainSettings(int currentstatus,int newstatus) {
+	if(currentstatus != newstatus) {
+		if(getCvar("G2_RAIN") == 0) {
+			setactorstate(TID_RAIN,"off",1);
+		} else {
+			if(checkInventory("G2_Festive") > 0) {
+				setactorstate(TID_RAIN,"see2",1);
+			} else {
+				setactorstate(TID_RAIN,"see",1);
+			}
+		}
+		return newstatus;
+	}
+	return currentstatus;
+}
+
+function int FX_FogSettings(int currentstatus,int newstatus) {
+	if(currentstatus != newstatus) {
+		if(getCvar("G2_FOG") == 0) {
+			setactorstate(TID_FOG,"off",1);
+		} else {
+			setactorstate(TID_FOG,"Spawn2",1);
+		}
+		return newstatus;
+	}
+	return currentstatus;
+}

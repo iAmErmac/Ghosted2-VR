@@ -1,0 +1,246 @@
+// SLENDERMAN
+Slenderman/Stinger BOO
+Slenderman/Kill1 Slnkill
+Slenderman/Kill2 Slnkill2
+Slenderman/Attack DSBOO
+$random Slenderman/Kill {Slenderman/Kill1 Slenderman/Kill2}
+Slenderman/Distorted1 Sounds/Ghosts/Slender/SFX_Slender_001.wav
+Slenderman/Distorted2 Sounds/Ghosts/Slender/SFX_Slender_002.wav
+Slenderman/Distorted3 Sounds/Ghosts/Slender/SFX_Slender_003.wav
+Slenderman/Distorted4 Sounds/Ghosts/Slender/SFX_Slender_004.wav
+Slenderman/Distorted5 Sounds/Ghosts/Slender/SFX_Slender_005.wav
+Slenderman/Distorted6 Sounds/Ghosts/Slender/SFX_Slender_006.wav
+Slenderman/Distorted7 Sounds/Ghosts/Slender/SFX_Slender_007.wav
+Slenderman/Distorted8 Sounds/Ghosts/Slender/SFX_Slender_008.wav
+Slenderman/Distorted9 Sounds/Ghosts/Slender/SFX_Slender_009.wav
+Slenderman/Distorted10 Sounds/Ghosts/Slender/SFX_Slender_010.wav
+Slenderman/Distorted11 Sounds/Ghosts/Slender/SFX_Slender_011.wav
+Slenderman/Distorted12 Sounds/Ghosts/Slender/SFX_Slender_012.wav
+Slenderman/Distorted13 Sounds/Ghosts/Slender/SFX_Slender_013.wav
+Slenderman/Distorted14 Sounds/Ghosts/Slender/SFX_Slender_014.wav
+Slenderman/Distorted15 Sounds/Ghosts/Slender/SFX_Slender_015.wav
+Slenderman/Distorted16 Sounds/Ghosts/Slender/SFX_Slender_016.wav
+Slenderman/Distorted17 Sounds/Ghosts/Slender/SFX_Slender_017.wav
+Slenderman/Distorted18 Sounds/Ghosts/Slender/SFX_Slender_018.wav
+
+// THE GIRL
+Girl/Idle Crying
+$ROLLOFF Girl/Idle 64 128
+Girl/Boo girlatt
+Girl/Kill1 GrlKill
+Girl/Kill2 GrlKill2
+Girl/See BABCRY
+Girl/See2 GirlSee2
+Girl/See3 GirlSee3
+$volume Girl/See2 0.4
+$volume Girl/See3 0.4
+$rolloff Girl/See2 128 1200
+$rolloff Girl/See3 128 1200
+$random Girl/Active {Girl/See2 Girl/See3}
+$random Girl/Kill {Girl/Kill1 Girl/Kill2}
+
+// SKELETON
+Man/Enraged manatck
+Man/Sees1 sklla1
+Man/Sees2 sklla2
+Man/Sees3 sklla3
+
+$volume Man/Enraged 1.2
+$volume Man/Sees1 1.5
+$volume Man/Sees2 1.5
+$volume Man/Sees3 1.5
+$rolloff Man/Sees1 256 1200
+$rolloff Man/Sees2 256 1200
+$rolloff Man/Sees3 256 1200
+$random Man/Sees {Man/Sees1 Man/Sees2 Man/Sees3}
+
+
+// Check: Is this somewhere???
+noise lflick
+$volume noise 0.5
+
+
+// Misc sounds
+countdown_eight eight
+Pent Pent
+
+// Sounds played when player gets killed
+Player/Death1 death
+Player/Death2 death2
+Player/Death3 death3
+Player/Death4 death4
+Player/Death5 death5
+$random Player/Death {Player/Death1 Player/Death2 Player/Death3 Player/Death4 Player/Death5}
+
+Global/Bass Move3
+Ghosted2/Intro INTRO
+Ghosted2/AllPages1 Sounds/Enviromental/SFX/MISC/SFX_AllPageGot_001.wav
+Ghosted2/AllPages2 Sounds/Enviromental/SFX/MISC/SFX_AllPageGot_002.wav
+Ghosted2/AllPages3 Sounds/Enviromental/SFX/MISC/SFX_AllPageGot_003.wav
+$random Ghosted2/AllPages {Ghosted2/AllPages1 Ghosted2/AllPages2 Ghosted2/AllPages3}
+Ghosted2/Achievement ACH
+Ghosted2/Menu/Fade LISTEND
+Ghosted2/Menu/Click LISTNEXT
+
+Map03/TrainBreaks trnbrks
+$rolloff Map03/TrainBreaks 1200 10000
+$volume Map03/TrainBreaks 0.2
+
+Global/Wind1 WIND01
+$rolloff Global/Wind1 200 1900
+$ambient 4 Global/Wind1 point 0.75 continous 0.3
+
+Global/RunningWater1 rnwtr
+$rolloff Global/RunningWater1 250 1000
+$ambient 5 Global/RunningWater1 point 0.75 continous 0.4
+
+Global/MachineNoise1 mchnose
+$rolloff Global/MachineNoise1 250 1300
+$ambient 6 Global/MachineNoise1 point 0.55 continous 0.8
+
+Global/Atmosphere1 atmpsh
+$rolloff Global/Atmosphere1 500 2000
+$pitchshift Global/Atmosphere1 7
+$ambient 7 Global/Atmosphere1 point 0.75 continous 0.8
+
+Global/RunningWater2 wtrfl
+$rolloff Global/RunningWater2 200 1100
+$ambient 8 Global/RunningWater2 point 0.75 continous 0.4
+
+Global/MachineNoise2 mchnose2
+$rolloff Global/MachineNoise2 250 1300
+$ambient 9 Global/MachineNoise2 point 0.75 continous 0.8
+
+Global/MachineHum MachineryHum
+$AMBIENT 10 Global/MachineHum Point continous 0.6
+
+Global/CaveWind CavernWind
+$AMBIENT 13 Global/CaveWind Point continous 0.9
+
+Global/DemonicTalking SFX_DEMONSPEECH
+$AMBIENT 14 Global/DemonicTalking Point 0.88 continous 0.6
+
+Global/Fire firecrck
+$rolloff Global/Fire 200 1000
+$volume Global/Fire 0.4
+$pitchshift Global/Fire 7
+
+//FOOTSTEPS
+FootSteps/Default1 dsstp1
+FootSteps/Default2 dsstp2
+FootSteps/Default3 dsstp3
+FootSteps/Default4 dsstp4
+$random FootSteps/Default {FootSteps/Default1 FootSteps/Default2 FootSteps/Default3 FootSteps/Default4}
+
+FootSteps/Metal1 MET01
+FootSteps/Metal2 MET02
+FootSteps/Metal3 MET03
+FootSteps/Metal4 MET04
+FootSteps/Metal5 MET05
+FootSteps/Metal6 MET06
+$random FootSteps/Metal {FootSteps/Metal1 FootSteps/Metal2 FootSteps/Metal3 FootSteps/Metal4 FootSteps/Metal5 FootSteps/Metal6}
+
+FootSteps/Dirt1 DIRT1
+FootSteps/Dirt2 DIRT2
+FootSteps/Dirt3 DIRT3
+FootSteps/Dirt4 DIRT4
+FootSteps/Dirt5 DIRT5
+FootSteps/Dirt6 DIRT6
+$random FootSteps/Dirt {FootSteps/Dirt1 FootSteps/Dirt2 FootSteps/Dirt3 FootSteps/Dirt4 FootSteps/Dirt5 FootSteps/Dirt6 }
+
+FootSteps/Rock1 Rock1
+FootSteps/Rock2 Rock2
+FootSteps/Rock3 Rock3
+FootSteps/Rock4 Rock4
+FootSteps/Rock5 Rock5
+FootSteps/Rock6 Rock6
+FootSteps/Rock7 Rock7
+FootSteps/Rock8 Rock8
+$random FootSteps/Rock {FootSteps/Rock1 FootSteps/Rock2 FootSteps/Rock3 FootSteps/Rock4 FootSteps/Rock5 FootSteps/Rock6 FootSteps/Rock7 FootSteps/Rock8}
+
+FootSteps/Carpet1 Carp1
+FootSteps/Carpet2 Carp2
+FootSteps/Carpet3 Carp3
+$random FootSteps/Carpet {FootSteps/Carpet1 FootSteps/Carpet2 FootSteps/Carpet3}
+
+FootSteps/Tile1 Tile01
+FootSteps/Tile2 Tile02
+FootSteps/Tile3 Tile03
+FootSteps/Tile4 Tile04
+FootSteps/Tile5 Tile05
+FootSteps/Tile6 Tile06
+$random FootSteps/Tile {FootSteps/Tile1 FootSteps/Tile2 FootSteps/Tile3 FootSteps/Tile4 FootSteps/Tile5 FootSteps/Tile6 }
+
+FootSteps/Snow1 snowa
+FootSteps/Snow2 snowb
+FootSteps/Snow3 snowc
+FootSteps/Snow4 snowd
+FootSteps/Snow5 snowe
+FootSteps/Snow6 snowf
+$random FootSteps/Snow {FootSteps/Snow1 FootSteps/Snow2 FootSteps/Snow3 FootSteps/Snow4 FootSteps/Snow5 FootSteps/Snow6}
+
+//Flashlight
+weapons/flashlight_switch DSFLSW
+$random DDZ_Flashlight_Off {
+	DarkDoomZ/Flashlight/01
+	DarkDoomZ/Flashlight/02
+	DarkDoomZ/Flashlight/03
+	DarkDoomZ/Flashlight/04
+	DarkDoomZ/Flashlight/05
+	DarkDoomZ/Flashlight/06
+	DarkDoomZ/Flashlight/07
+	DarkDoomZ/Flashlight/08
+	DarkDoomZ/Flashlight/09
+	DarkDoomZ/Flashlight/10
+	DarkDoomZ/Flashlight/11
+	DarkDoomZ/Flashlight/12	}
+
+$random DDZ_Flashlight_On {
+	DarkDoomZ/Flashlight/13
+	DarkDoomZ/Flashlight/14
+	DarkDoomZ/Flashlight/15
+	DarkDoomZ/Flashlight/16
+	DarkDoomZ/Flashlight/17
+	DarkDoomZ/Flashlight/18
+	DarkDoomZ/Flashlight/19
+	DarkDoomZ/Flashlight/20
+	DarkDoomZ/Flashlight/21
+	DarkDoomZ/Flashlight/22
+	DarkDoomZ/Flashlight/23
+	DarkDoomZ/Flashlight/24	}
+
+DarkDoomZ/Flashlight/01		DDZCLK01
+DarkDoomZ/Flashlight/02		DDZCLK02
+DarkDoomZ/Flashlight/03		DDZCLK03
+DarkDoomZ/Flashlight/04		DDZCLK04
+DarkDoomZ/Flashlight/05		DDZCLK05
+DarkDoomZ/Flashlight/06		DDZCLK06
+DarkDoomZ/Flashlight/07		DDZCLK07
+DarkDoomZ/Flashlight/08		DDZCLK08
+DarkDoomZ/Flashlight/09		DDZCLK09
+DarkDoomZ/Flashlight/10		DDZCLK10
+DarkDoomZ/Flashlight/11		DDZCLK11
+DarkDoomZ/Flashlight/12		DDZCLK12
+DarkDoomZ/Flashlight/13		DDZCLK13
+DarkDoomZ/Flashlight/14		DDZCLK14
+DarkDoomZ/Flashlight/15		DDZCLK15
+DarkDoomZ/Flashlight/16		DDZCLK16
+DarkDoomZ/Flashlight/17		DDZCLK17
+DarkDoomZ/Flashlight/18		DDZCLK18
+DarkDoomZ/Flashlight/19		DDZCLK19
+DarkDoomZ/Flashlight/20		DDZCLK20
+DarkDoomZ/Flashlight/21		DDZCLK21
+DarkDoomZ/Flashlight/22		DDZCLK22
+DarkDoomZ/Flashlight/23		DDZCLK23
+DarkDoomZ/Flashlight/24		DDZCLK24
+
+//Lighter
+weapons/lighter_open DSZOPEN
+weapons/lighter_click DSZIP
+weapons/lighter_close DSZCLOSE
+
+//Glowstick
+weapons/glowstick_throw DSTHROW
+weapons/glowstick_pick DSGPICK
+weapons/glowstick_pick2 DSTHROW
+$volume weapons/glowstick_pick2 0.3

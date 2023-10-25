@@ -1,0 +1,234 @@
+actor Skeleton : G2_Ghost {
+	renderstyle add
+	alpha 1.0
+	
+	scale 0.1779
+	speed 15
+	height 62
+	radius 20
+	
+	States {
+		Spawn:
+			THRD A 0
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_PlaySoundEx("Man/Sees","Soundslot7",1,0)
+		SpawnLoop:
+			THRD AAAABAABAAAACAAAACDAACAAAAAAAABCAAADABCAABCBADAACAABAADAAAAAACAAAAAABAAAABAAABABAACAADACAADACD 1 A_Look
+			loop
+		Seen:
+		Sees:
+			THRD A 0
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfTargetInLos("SeesSound")
+			THRD A 0 A_Jump(255,"See","See2")
+			TNT1 A 1
+			goto See
+		SeesSound:
+			THRD A 0 //A_PlaySoundEx("Man/Sees","Soundslot7",0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_Jump(255,"See","See2")
+			TNT1 A 1
+			goto See
+		See:
+			THRD A 0
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD AAAABAABAAAACA 1 A_SpawnItemEx("SkeletonFX",0,0,0,0,3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_FaceTarget
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_Jump(50,"Move")
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD AAACDAACAAAAAA 1 A_SpawnItemEx("SkeletonFX",0,0,0,0,3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_FaceTarget
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_Jump(50,"Move")
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD AABCAAADABCAABCBADAACAABAADA 1 A_SpawnItemEx("SkeletonFX",0,0,0,0,3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_FaceTarget
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_Jump(50,"Move")
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD AAAAACAAAAAABAAAABAAABABAACA 1 A_SpawnItemEx("SkeletonFX",0,0,0,0,3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_FaceTarget
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_Jump(50,"Move")
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD ADACAADACD 1 A_SpawnItemEx("SkeletonFX",0,0,0,0,3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_JumpIfTargetInLos("Move")
+			goto Travel
+		See2:
+			THRD A 0
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD EEEEEFFFEEEEEE 1 A_SpawnItemEx("SkeletonFX2",0,0,0,0,-3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_FaceTarget
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_Jump(50,"Move")
+			
+			THRD GEEEEEEEEEEEEH 1 A_SpawnItemEx("SkeletonFX2",0,0,0,0,-3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_FaceTarget
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_Jump(50,"Move")
+			
+			THRD EEFEEEEHEEFEGEFHEEFEEEHEGFEH 1 A_SpawnItemEx("SkeletonFX2",0,0,0,0,-3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_FaceTarget
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_Jump(50,"Move")
+			
+			THRD EFEGEEFEEFEHGEEFEEEFEEEEEFEE 1 A_SpawnItemEx("SkeletonFX2",0,0,0,0,-3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_FaceTarget
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_Jump(50,"Move")
+			
+			THRD EFGEFHGEFEHGFFHE 1 A_SpawnItemEx("SkeletonFX2",0,0,0,0,3,0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_JumpIfTargetInLos("Move")
+			goto Travel
+		Move:
+			THRD A 0
+			THRD A 0
+			THRD A 0 A_SetTranslucent(1.0,1)
+			
+			THRD AAAA 0 A_Chase
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD DABCDEFG 1 A_SpawnItemEx("SkeletonFX",0,0,0,0,random(-3,3),0,random(-2,2),SXF_CLIENTSIDE)
+			THRD A 0 A_FaceTarget
+			THRD AAAA 0 A_Chase
+			THRD H 1 A_FaceTarget
+			TNT1 A 1
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_LookEx(LOF_NOSOUNDCHECK,0,150,1,360,"Rage")
+			THRD A 0 A_FaceTarget
+			THRD A 0 A_Jump(255,"See","See2")
+			THRD H 1 //Avoid desync in Zandronum multiplayer
+			goto See
+		Rage:
+			THRD A 0
+			THRD A 0 A_PlaySoundEx("Man/Enraged","SoundSlot5")
+			THRD A 0 A_CustomBulletAttack(5.0,5.0,1,0,"ManPuff",120)
+			THRD I 0 A_SetTranslucent(1.0,0)
+			THRD IJIKLK 1 //A_Chase
+			THRD IIIIII 0 A_Chase
+			THRD I 0 A_CustomBulletAttack(5.0,5.0,1,0,"ManPuff",120)
+			THRD JIKIJLK 1 //A_Chase 
+			THRD IIIIII 0 A_Chase
+			THRD I 0 A_CustomBulletAttack(5.0,5.0,1,0,"ManPuff",120)
+			THRD JIJIKLK 1 //A_Chase
+			THRD I 0 A_CustomBulletAttack(5.0,5.0,1,0,"ManPuff",120)
+			THRD LKJILJL 1 //A_Chase
+			THRD IIIIII 0 A_Chase
+			THRD I 0 A_CustomBulletAttack(5.0,5.0,1,0,"ManPuff",120)
+			THRD IJLKLJL 1 //A_Chase 
+			THRD I 0 A_CustomBulletAttack(5.0,5.0,1,0,"ManPuff",120)
+			THRD JLIJKLIJ 1 //A_Chase 
+			THRD IIIIII 0 A_Chase
+			THRD I 0 A_CustomBulletAttack(5.0,5.0,1,0,"ManPuff",120)
+			THRD JIKIJLK 1 //A_Chase
+			THRD I 0 A_CustomBulletAttack(5.0,5.0,1,0,"ManPuff",120)
+			THRD LKJILJL 1 //A_Chase
+			THRD IIIIII 0 A_Chase
+			THRD I 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_Jump(256,"See","See2")
+			THRD H 1 //Avoid desync in Zandronum multiplayer
+			goto See
+		Travel:
+			THRD A 0
+			THRD A 0 A_SetTranslucent(1.0,1)
+			TNT1 AAAAAA 1 A_Wander
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			THRD A 0 A_JumpIf(ACS_ExecutewithREsult(602,0,args[0]) > 0,"Seen")
+			TNT1 AAAAAA 1 A_Wander
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			TNT1 AAAAAA 1 A_Wander
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			THRD A 0 A_JumpIf(ACS_ExecutewithREsult(602,0,args[0]) > 0,"Seen")
+			TNT1 AAAAAA 1 A_Chase
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			TNT1 AAAAAA 1 A_Wander
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			THRD A 0 A_JumpIf(ACS_ExecutewithREsult(602,0,args[0]) > 0,"Seen")
+			TNT1 AAAAAA 1 A_Chase
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			TNT1 AAAAAA 1 A_Chase
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			THRD A 0 A_JumpIf(ACS_ExecutewithREsult(602,0,args[0]) > 0,"Seen")
+			TNT1 AAAAAA 1 A_Chase
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			TNT1 AAAAAA 1 A_Chase
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			THRD A 0 A_JumpIf(ACS_ExecutewithREsult(602,0,args[0]) > 0,"Seen")
+			TNT1 AAAAAA 1 A_Chase
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_SetTranslucent(1.0,1)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			TNT1 AAAAAA 1 A_Chase
+			THRD A 0 A_JumpIf(ACS_ExecutewithREsult(602,0,args[0]) > 0,"Seen")
+			THRD A 0 ACS_ExecuteAlways(603,0,0,0,0)
+			THRD A 0 A_JumpIfCloser(384,"Sees")
+			THRD A 0 A_LookEx(0,0,4000,6000,360,"Travel")
+			THRD A 1
+			loop
+	}
+}
+
+actor ManPuff {
+	States {
+		Spawn:
+			TNT1 A 0
+			stop
+	}
+}
+
+actor Skeleton2 : Skeleton {
+	renderstyle translucent
+	alpha 1.0
+}
+
+actor SkeletonFX {
+	renderstyle add
+	scale 0.1779
+	alpha 0.4
+	height 2
+	radius 2
+	+CLIENTSIDEONLY
+	+RANDOMIZE
+	+NOGRAVITY
+	+NOBLOCKMAP
+	+MISSILE
+	+THRUACTORS
+	damage 0
+	States {
+		Spawn:
+			THRD AABABABACBAADBAABAAABAABBABAAACABAABBABABDD 1 A_FadeOut(0.03)
+			loop
+		Death:
+			THRD A 0
+			THRD A 0
+			stop
+	}	
+}
+
+actor SkeletonFX2 : SkeletonFX {
+	States {
+		Spawn:
+			THRD EEEFHEEFGEEEGFEGFGEHFHEFHGEEEEFFEGGHGEEEFGEEEEGHEEEFFEE 1 A_FadeOut(0.03)
+			loop
+	}	
+}

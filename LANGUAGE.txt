@@ -1,0 +1,19 @@
+[enu default]
+
+NIGHTMARE = "Are you sure you ain't planning to sleep tonight?";
+
+QUITMSG = "Got eneought already?";
+QUITMSG1 = "Don't go now! They still might be around...";
+QUITMSG2 = "Are you sure?";
+QUITMSG3 = "I think I understand you...";
+QUITMSG4 = "Done already?";
+QUITMSG5 = "Going to bed?";
+QUITMSG6 = "Found all the secrets? I don't think so!";
+QUITMSG7 = "2, 0, 9, 1, 4,";
+QUITMSG8 = "Whoever designed these buildings must have been afraid of lighting!";
+QUITMSG9 = "The last page might be just around the corner!";
+QUITMSG10 = "How about you giving it another try?";
+QUITMSG11 = "Rest in peace?";
+QUITMSG12 = "Come on! It's not that bad!";
+QUITMSG13 = "Afraid?";
+QUITMSG14 = "The end is near!";

@@ -1,0 +1,43 @@
+Thanks for playing!
+
+Btw I have no idea why are you looking into this file.
+But here are the credits, If I missed someone / something just notify me via zandronum or zdoom forums (RaveYard) or on youtube (MrRaveYard).
+
+________________________________________________________
+Credits:
+
+??? - Girl death screen
+
+??? - SKull death screen
+
+Slender Arrival creator(s) - Slenderman death screen
+
+Apoc9 - help with few acs problems and testing
+
+LovelyAssasin - Slenderman model http://tf3dm.com/3d-model/slenderman-from-slender-the-arrival-79467.html
+
+Realm667 - Texture packs, props (stuff in props.wad)
+
+Various free sound finding webs - ambient sounds.
+
+Nightmare Maze 4 - base of "Thegirl's" sprite.
+
+Ghoul's vs Humans - side grass texture (that is used in map02)
+
+Brutldum - for that ceiling and floor blood model and idea for ceiling blood
+
+Doom3 - The Girl sounds, train breaks, lights breaking and turning on 
+
+Nightmare House 2 team - for unused sounds
+
+The Living Tombstone (Koolfox) - Nightmare House 2 unused soundtrack (the one in Ghosted 1 map)
+
+TerminusEst13 - probably reading this damn file to nitpick. Btw congrats on Cacowards
+
+Jakob Fischer
+jakob@pizzadude.dk
+www.pizzadude.dk - Year Suply of Fairy Cakes (.ttf)
+
+Doom World - For The Cacoward.... IF I HAD ONE! ;_;
+
+Thanks to anyone who supported me directly or indirectly and to everyone who played / plays this mod :)

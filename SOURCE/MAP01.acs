@@ -1,0 +1,73 @@
+#include "zcommon.acs"
+
+#import "G_MAIN.acs"
+#import "G_PAGES.acs"
+#import "G_MATH.acs"
+#import "G_TRACKER.acs"
+#import "G_GHOST.acs"
+#import "G_PLAYER.acs"
+#import "G_SIGHT.acs"
+#import "G_ENGINE.acs"
+#import "G_LIGHTS.acs"
+#import "G_MOD.acs"
+#import "G_NOISE.acs"
+#import "G_AI.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_SNOISE.acs"
+
+#library "MAP01"
+
+script 999 open { //Set the defaults
+    G_PAGESCOUNT = 8;
+    G_PAGEMINSPOT = 39;
+    G_PAGEMAXSPOT = 80;
+    G_GHOSTTAG = 1350;
+    
+    G_GHOSTMIN = 9000;
+    G_GHOSTMAX = 9006;
+}
+
+/* Map Scrips */
+
+script 995 open { //Map
+    SetLineBlocking(1,BLOCK_PLAYERS);
+    acs_execute(14,0,0,0,0);
+	
+	Sector_SetPlaneReflection (200,45,0);
+	
+	while(G_GAMEOVER == 0) {
+		delay(35);
+	}
+	
+	if(random(0,1 + PlayerCount()) == 0) {
+			ceiling_raisebyvalue(5,32,40);
+	}
+}
+
+script 2 enter {
+    if(PlayerNumber() > 31) {
+        delay(35);
+        Teleport(playerNumber() - 31 + 1001,0,1);
+    } else {
+        Teleport(playerNumber() + 1001,0,1);
+    }
+    delay(10);
+}
+
+script 3 respawn {
+    ACS_ExecuteAlways(2,0,0,0,0);
+}
+
+int active6 = 0;
+script 14 (int arg) {
+    if(active6 == 0) {
+        TranslucentLine(1,0,0);
+        setlineBlocking(1,BLOCK_NOTHING);
+        active6++;
+    } else {
+        TranslucentLine(1,255,0);
+        setlineBlocking(1,BLOCK_PLAYERS);
+        active6--;
+    }
+    
+}

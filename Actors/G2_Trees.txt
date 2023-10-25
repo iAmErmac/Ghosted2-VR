@@ -1,0 +1,104 @@
+actor G2_Decoration {
+	+SOLID
+	+NOGRAVITY
+	height 50
+	radius 15
+}
+
+actor G2_Tree1 : G2_Decoration 30112
+{
+	height 20
+	radius 20
+	-SOLID
+	states
+	{
+		Spawn:
+		TREE A -1
+		loop
+	}
+}
+
+
+actor G2_Tree2 : G2_Decoration 30113
+{
+	height 128
+	radius 10
+	states
+	{
+		Spawn:
+		TREE B -1
+		loop
+	}
+}
+
+actor G2_Tree3 : G2_Decoration 30114
+{
+	height 128
+	radius 14
+	states
+	{
+		Spawn:
+		TREE C -1
+		loop
+	}
+}
+
+actor G2_Tree4 : G2_Decoration 30115
+{
+	height 128
+	radius 10
+	states
+	{
+		Spawn:
+		TREE D -1
+		loop
+	}
+}
+
+actor G2_Tree5 : G2_Decoration 30116
+{
+	height 128
+	radius 10
+	states
+	{
+		Spawn:
+		TREE E -1
+		loop
+	}
+}
+
+actor G2_Tree6 : G2_Decoration 30117
+{
+	height 128
+	radius 16
+	states
+	{
+		Spawn:
+		TREE F -1
+		loop
+	}
+}
+
+actor G2_Tree7 : G2_Decoration 30118
+{
+	height 128
+	radius 16
+	states
+	{
+		Spawn:
+		TREE G -1
+		loop
+	}
+}
+
+actor G2_Tree8 : G2_Decoration 30119
+{
+	height 128
+	radius 16
+	states
+	{
+		Spawn:
+		TREE H -1
+		loop
+	}
+}

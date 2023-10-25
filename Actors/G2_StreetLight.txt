@@ -1,0 +1,83 @@
+//Totaly inactive actor!
+
+actor G2_StreetLight_BG 30010 {
+	+NOGRAVITY
+	+NOBLOCKMAP
+	height 128
+	radius 32
+	States {
+		Spawn:
+			PUFF A 0
+			//goto HD	
+			PUFF A 0 A_SpawnItemEx("G2_Streetlight_Flare",45,0,128)
+			PUFF A 0 A_SpawnItemEx("G2_Streetlight_Flare",35,0,128)
+			PUFF A 0 A_SpawnItemEx("G2_Streetlight_Flare",25,0,128)
+		Spawn2:
+			PUFF A -1
+			stop
+		HD:
+			PUFF A 1 A_SpawnItemEx("G2_Streetlight_Flare2",45,0,128, random(-1,1), random(-1,1), random(-1,0))
+			loop
+			
+	}
+}
+
+actor G2_Streetlight_Flare {
+	+NOGRAVITY
+	+NOBLOCKMAP
+	renderstyle add
+	alpha 0.9
+	xscale 0.18
+	yscale 0.38
+	States {
+		Spawn:
+			FLAR B -1 bright
+			loop
+	}
+}
+
+
+
+actor G2_Streetlight_Flare2 {
+	+NOGRAVITY
+	+NOBLOCKMAP
+	renderstyle add
+	alpha 0.5
+	xscale 0.2
+	yscale 0.38
+	States {
+		Spawn:
+			FLAR B 1 bright A_FadeOut(0.08)
+			loop
+	}
+}
+
+//Delete
+
+
+actor G2_Streetlight_Flare3 {
+	+NOGRAVITY
+	+NOBLOCKMAP
+	renderstyle add
+	alpha 0.3
+	scale 0.3
+	//yscale 0.38
+	States {
+		Spawn:
+			FLAR A 1 bright A_FadeOut(0.02)
+			loop
+	}
+}
+
+
+actor FlareTest {
+	+NOGRAVITY
+	+NOBLOCKMAP
+	height 1
+	radius 1
+	States {
+		Spawn:
+			TNT1 A 1 A_SpawnItemEx("G2_Streetlight_Flare3",45,0,128, random(-4,4), random(-4,4), random(-2,6))
+			loop	
+	}
+}

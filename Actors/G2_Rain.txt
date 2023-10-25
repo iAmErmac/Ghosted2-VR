@@ -1,0 +1,60 @@
+actor G2_Rain 31200 {
+	+CLIENTSIDEONLY
+	+NOGRAVITY
+	States {
+		Spawn:
+			TNT1 A 0
+			TNT1 A 0 Thing_ChangeTID(0,8000)
+		See:
+			TNT1 A 10
+			TNT1 A 0
+		Rainy:
+			TNT1 A 0
+			TNT1 A 0 A_CheckSight("See")
+			TNT1 A 4 A_SpawnItemEx("G2_Rainparticle",random(-args[0]-(args[1]*255),args[0]+(args[1]*255)),random(-args[0]-(args[1]*255),args[0]+(args[1]*255)),args[2],0,0,-22,0,SXF_CLIENTSIDE|SXF_NOCHECKPOSITION)
+			loop
+		See2:
+			TNT1 A 10
+		Snow:
+			TNT1 A 0 A_CheckSight("See2")
+			TNT1 A 8 A_SpawnItemEx("G2_SnowParticle",random(-args[0]-(args[1]*255),args[0]+(args[1]*255)),random(-args[0]-(args[1]*255),args[0]+(args[1]*255)),args[2],random(-1,1),random(-1,1),-4,0,SXF_CLIENTSIDE|SXF_NOCHECKPOSITION)
+			loop
+		Off:
+			TNT1 A 35
+			loop
+	}
+}
+
+actor G2_Rainparticle {
+	+CLIENTSIDEONLY
+	+MISSILE
+	+THRUACTORS
+	-NOGRAVITY
+	height 2
+	radius 2
+	XScale 0.25
+	yscale 0.55
+	renderstyle translucent
+	alpha 0.75
+	States {
+		Spawn:
+			RAIN A 1 A_FadeOut(0.01)
+			loop
+		Death:
+			RAIN B 0
+			RAIN B 0 A_CheckSight("Remove")
+			RAIN B 0 A_CheckFloor("Floor")
+			stop
+		Remove:
+			RAIN B 0
+			stop
+		Floor:
+			RAIN A 2
+			RAIN BC 1 A_FadeOut(0.25)
+			RAIN D 10
+		FadeOut:
+			RAIN D 1 A_FadeOut(0.001)
+			loop
+	}
+}
+

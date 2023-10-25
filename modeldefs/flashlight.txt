@@ -1,0 +1,102 @@
+
+Model Flashlight
+{ 
+	Path "models/weapons/flashlight"
+	Model 0 "flashlight.md3"
+	Skin 0 "flashlight.png"
+	Model 1 "flashlight_hand.md3"
+	Skin 1 "hand.png"
+	Scale -0.7 0.7 0.7
+	Offset 3.0 -20 -7.0
+	
+	NOINTERPOLATION
+
+	//Ready
+	FrameIndex D3FG A 0 0	FrameIndex D3FG A 1 0
+	
+	Skin 0 "flashlight2.png"
+	
+	FrameIndex D3FG B 0 0	FrameIndex D3FG B 1 0
+}
+
+//lcd overlays
+Model Flashlight
+{ 
+	Path "models/weapons/flashlight"
+	Model 0 "flashlight_lcd1.md3"
+	Skin 0 "digit0.png"
+	Scale -0.7 0.7 0.7
+	Offset 3.0 -20 -7.0
+	
+	NOINTERPOLATION
+
+	FrameIndex LCD1 A 0 0
+	
+	Skin 0 "digit1.png"
+	FrameIndex LCD1 B 0 0
+	
+	Skin 0 "digit2.png"
+	FrameIndex LCD1 C 0 0
+	
+	Skin 0 "digit3.png"
+	FrameIndex LCD1 D 0 0
+	
+	Skin 0 "digit4.png"
+	FrameIndex LCD1 E 0 0
+	
+	Skin 0 "digit5.png"
+	FrameIndex LCD1 F 0 0
+	
+	Skin 0 "digit6.png"
+	FrameIndex LCD1 G 0 0
+	
+	Skin 0 "digit7.png"
+	FrameIndex LCD1 H 0 0
+	
+	Skin 0 "digit8.png"
+	FrameIndex LCD1 I 0 0
+	
+	Skin 0 "digit9.png"
+	FrameIndex LCD1 J 0 0
+}
+
+//lcd overlays
+Model Flashlight
+{ 
+	Path "models/weapons/flashlight"
+	Model 0 "flashlight_lcd2.md3"
+	Skin 0 "digit0.png"
+	Scale -0.7 0.7 0.7
+	Offset 3.0 -20 -7.0
+	
+	NOINTERPOLATION
+
+	FrameIndex LCD2 A 0 0
+	
+	Skin 0 "digit1.png"
+	FrameIndex LCD2 B 0 0
+	
+	Skin 0 "digit2.png"
+	FrameIndex LCD2 C 0 0
+	
+	Skin 0 "digit3.png"
+	FrameIndex LCD2 D 0 0
+	
+	Skin 0 "digit4.png"
+	FrameIndex LCD2 E 0 0
+	
+	Skin 0 "digit5.png"
+	FrameIndex LCD2 F 0 0
+	
+	Skin 0 "digit6.png"
+	FrameIndex LCD2 G 0 0
+	
+	Skin 0 "digit7.png"
+	FrameIndex LCD2 H 0 0
+	
+	Skin 0 "digit8.png"
+	FrameIndex LCD2 I 0 0
+	
+	Skin 0 "digit9.png"
+	FrameIndex LCD2 J 0 0
+}

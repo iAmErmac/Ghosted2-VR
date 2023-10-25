@@ -1,0 +1,160 @@
+ACTOR GlowStick : GlowStickZ
+{
+	//+DONTBOB
+	Inventory.PickupMessage "Picked up a glowstick"
+	Inventory.PickupSound "weapons/glowstick_pick"
+	Weapon.ammotype "GlowSticks"
+	Weapon.ammouse 1
+	Weapon.ammogive 1
+	Weapon.ammotype2 "GlowSticks"
+	Weapon.ammouse2 1
+	+WEAPON.NOAUTOAIM
+	+WEAPON.MELEEWEAPON
+	+WEAPON.NOHANDSWITCH
+	
+	renderstyle add
+	scale 0.2
+	alpha 1.0
+	
+	States
+	{
+		Spawn:
+			GSTC A 1
+			Loop
+		Ready:
+			TNT1 A 0
+			GSTG A 1
+			{
+				A_StickGlow();
+				A_WeaponReady;
+			}
+			Goto Ready
+		Select:
+			GSTG A 1 A_Raise(160)
+			Loop
+		Deselect:
+			GSTG A 1 A_Lower(160)
+			loop
+		Fire:
+			GSTG A 0 A_JumpIfInventory("Glowsticks",2,1)
+			Goto Ready
+			GSTG BCD 1
+			GSTG E 1 A_StartSound("weapons/glowstick_throw", CHAN_WEAPON)
+			GSTG F 1 A_FireProjectile("ThrownGlowstick")
+			GSTG GH 1
+			GSTG A 3
+			goto Ready
+		AltFire:
+			GSTG A 0 A_JumpIfInventory("Glowsticks",2,1)
+			Goto Ready
+			GSTG BCD 1
+			GSTG E 1 A_StartSound("weapons/glowstick_throw", CHAN_WEAPON)
+			GSTG F 1 A_FireProjectile("ThrownGlowstick2")
+			GSTG GH 1
+			GSTG A 3
+			goto Ready
+			
+	}
+}
+
+actor GlowStickLight
+{
+	Projectile
+	+NOCLIP
+	-SOLID
+	+DONTSPLASH
+	+CLIENTSIDEONLY
+	+NOTIMEFREEZE
+	
+	States
+	{
+	Spawn:
+		TNT1 A 2
+		Stop
+	}
+}
+
+actor GlowStickLight2 : GlowStickLight {
+}
+
+actor ThrownGlowStick {
+	PROJECTILE
+	+DOOMBOUNCE
+	
+	renderstyle add
+	scale 0.2
+	alpha 1.0
+	
+	speed 35
+	-NOGRAVITY
+	
+	bouncefactor 0.45
+	
+	seesound "weapons/glowstick_pick2"
+	
+	//damagetype "G2_Weapons"
+	//damage 10
+	
+	states {
+		Spawn:
+			GSTC A 1 bright
+			GSTG A 0 bright A_SpawnItemEx("GlowStickLight2",0,0,40)
+			loop
+		Death:
+			//GSTC A 0 bright
+			//GSTC A 0 bright A_SpawnItemEx("GlowStickLight2",0,0,40)
+			GSTC A 1 bright A_SpawnItemEx("GlowStick2")
+			stop
+		
+	}
+}
+
+actor ThrownGlowStick2 : ThrownGlowStick {
+	speed 10
+}
+
+actor GlowStick2 : CustomInventory
+{
+	renderstyle add
+	scale 0.2
+	alpha 1.0
+	Inventory.PickupMessage "Glowstick!"
+	Inventory.PickupSound "weapons/glowstick_pick"
+	-COUNTITEM
+	+INVENTORY.IGNORESKILL
+	+DONTGIB //In ZDoom 2.7.1 it prevents from removing the item when crushed by doors
+  states
+  {
+  Spawn:
+    GSTC A 1 bright A_SpawnItemEx("GlowStickLight2",0,0,40)
+	//GSTC A 0 bright 
+    //GSTC A 0 A_GiveToTarget("Glowsticks",1)
+	loop
+  Pickup:
+	TNT1 A 0
+	TNT1 A 0 A_JumpIfInventory("Glowsticks",6,"Spawn")
+	TNT1 A 0 A_JumpIfInventory("Glowstick",1,"DoStuff")
+	TNT1 A 0
+	goto Spawn
+	DoStuff:
+	TNT1 A 0
+    TNT1 A 0 A_GiveInventory ("Glowsticks",1)
+    stop
+  }
+}
+
+ACTOR GlowSticks : Ammo
+{
+  Inventory.PickupMessage "Picked up a clip."
+  Inventory.Amount 1
+  Inventory.MaxAmount 6
+  Ammo.BackpackAmount 6
+  Ammo.BackpackMaxAmount 6
+  +INVENTORY.IGNORESKILL
+  States
+  {
+  Spawn:
+    CLIP A 1
+    Stop
+  }
+}

@@ -1,0 +1,13 @@
+brightmap sprite GOSTA0 {
+	map "brightmaps/GOSTA0.png"
+	//iwad
+	disablefullbright
+}
+brightmap sprite D3FGA0 {
+	map "brightmaps/D3FGA0.png"
+	disablefullbright
+}
+brightmap sprite COLUA0 {
+	map "brightmaps/COLUA0.png"
+	disablefullbright
+}

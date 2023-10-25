@@ -1,0 +1,346 @@
+//////////////////////////////////////////////
+// -- GHOSTED 2 -- >> Created by RaveYard <<//
+// Youtube Channel: MrRaveYard				//
+//////////////////////////////////////////////
+//G_PAGE.acs - Page picked script           //
+//////////////////////////////////////////////
+#include "zcommon.acs"
+#import "G_MAIN.acs"
+#import "G_LIGHTS.acs"
+#import "G_MATH.acs"
+#import "G_PLAYER.acs"
+#import "G_GHOST.acs"
+#import "G_ACHIEVEMENTS.acs"
+#import "G_NET.acs"
+
+#library "G_PAGES"
+
+#define G_PAGESPOTSLOTAMOUNT 100
+
+#define GG_PARAREL 10
+
+int G_PAGESCOUNT = 8;
+
+int PAGE_PICKED = 0;
+int PAGE_SPOTSUSED[G_PAGESPOTSLOTAMOUNT];
+int PAGE_SPOTLINK[G_PAGESPOTSLOTAMOUNT][G_PAGESPOTSLOTAMOUNT];
+int PAGE_SPAWNED = 0;
+int PAGE_APPARTING = 1024;
+
+// ======================================================================= //
+
+#define TID_PAGE 3000
+
+function int PAGE_getUsedSpotCount(int ignoredistance) { int t = 0; for(int i = 0;i < PAGE_getSpotCount();i++) {  if(!(PAGE_SPOTSUSED[i] == 0 || ( PAGE_SPOTSUSED[i] == 2 && ignoredistance ))) t++; } return t; }
+function int PAGE_getSpotCount(void) { return G_PAGEMAXSPOT - G_PAGEMINSPOT; }
+function int PAGE_getCurrentCount(void) { return PAGE_SPAWNED - PAGE_PICKED; }
+function int PAGE_hasAnyEmptySpot(int ignoredistance) { for(int i = 0;i < PAGE_getSpotCount();i++) { if(PAGE_SPOTSUSED[i] == 0 || (PAGE_SPOTSUSED[i]==2 && ignoredistance == true)) { return 1; } } return 0; }
+function int PAGE_shouldSpawnNext(void) { if(G_GAMEMODE == GAMEMODE_ENDLESS || G_PAGESCOUNT > PAGE_getSpotCount()) {  if((PAGE_SPAWNED - PAGE_PICKED) < PAGE_spawnLimit()) return true; return false; } return true; }
+function int PAGE_spawn(int index) { PAGE_SPOTSUSED[index] = 1; PAGE_SPAWNED++; return spawnspot("Page",index+G_PAGEMINSPOT,TID_PAGE,0); }
+function int PAGE_spawnLimit(void) {
+	int pageSpotCount = PAGE_getSpotCount();  
+	if(G_GAMEMODE == GAMEMODE_ENDLESS) {
+		if(pageSpotCount <= 5) { return 3; } 
+		else if(pageSpotCount <= 10) { return 6; } 
+		else { return 6 + ((pageSpotCount-6) / 4); }
+	}
+	if(G_PAGESCOUNT > pageSpotCount) { return pageSpotCount / 2; } return G_PAGESCOUNT;
+}
+
+function void PAGE_markFilled(int index) {
+	for(int pu = 0;pu < PAGE_getSpotCount();pu++) {
+		if(index == pu) {
+			continue;
+		}
+		if(PAGE_SPOTLINK[index][pu] == 1 && PAGE_SPOTSUSED[pu] == 0) {
+			PAGE_SPOTSUSED[pu] = 2;
+		}
+	}
+}
+
+function int PAGE_GetLastPageTID(void) {
+	if(G_PAGESCOUNT - PAGE_PICKED == 1) {
+		return TID_PAGE;
+	}
+	return 0;
+}
+
+// // // // // // // // // // //
+//  Rewritten for Ghosted2v2  //
+// // // // // // // // // // //
+script 409 (void) { //Page Spawning Script
+	//G_PAGEMINSPOT G_PAGEMAXSPOT G_PAGESCOUNT
+	for(int pi = 0;pi < PAGE_getSpotCount();pi++) {
+		for(int pu = 0;pu < PAGE_getSpotCount();pu++) {
+			if(pi == pu) {
+				continue;
+			}
+			if(distance(G_PAGEMINSPOT+pi,G_PAGEMINSPOT+pu) <= PAGE_APPARTING) {
+				PAGE_SPOTLINK[pi][pu] = 1;
+			}
+		}
+		
+		if(pi % 4 == 0) {
+			delay(1);
+		}
+	}
+	
+	//Spawn all pages
+	int prevc,cycles=0;
+	
+	//TODO, make function which will pray that this will work without problems!
+	for(int i = 0;i < G_PAGESCOUNT || G_GAMEMODE == GAMEMODE_ENDLESS ;i++) {
+		if(cycles > 5) {
+			cycles = 0; delay(1);
+		} else {
+			cycles++;
+		}
+		
+		//Pick random spot
+		int r = random(0,G_PAGEMAXSPOT - G_PAGEMINSPOT);
+		
+		//Is it clear?
+		int any = PAGE_hasAnyEmptySpot(0);
+		int any2 = PAGE_hasAnyEmptySpot(1);
+		
+		while(PAGE_SPAWNED - PAGE_PICKED >= PAGE_spawnLimit()) {
+			delay(70);
+		}
+		
+		if(PAGE_SPOTSUSED[r] == 0) {
+			prevc = ThingCountName("Page",0);
+			PAGE_spawn(r);
+			PAGE_markFilled(r);
+		} else if(any) {
+			i--;
+			continue;
+		} else if(!any && any2 && (PAGE_SPOTSUSED[r] == 2 || PAGE_SPOTSUSED[r] == 0) ) {
+			prevc = ThingCountName("Page",0);
+			PAGE_spawn(r);
+			PAGE_markFilled(r);
+		} else if(any2) {
+			i--;
+			continue;
+		} else {
+			while(!any2) {
+				any2 = PAGE_hasAnyEmptySpot(1);
+				delay(70);
+			}
+			continue;
+		}
+		
+		if(G_GAMEMODE != GAMEMODE_ENDLESS) {
+			if(ThingCount(0,TID_PAGE) > G_PAGESCOUNT) {
+				ThrowException("G_PAGES","Script 409",strparam(s:"Conflicting TID ",d:TID_PAGE,s:" has already ",d:thingcount(0,TID_PAGE)-G_PAGESCOUNT,s:" other actors with that same TID!"));
+			}
+		}
+		
+		if(prevc + 1 != ThingCountName("Page",0)) {
+			ThrowException("G_PAGES","409",strparam(s:"Page failed to be spawned at ",d:r));
+			i--;
+			continue;
+		}
+	}
+	
+	if(ThingCountName("Page",0) + PAGE_PICKED != G_PAGESCOUNT) {
+		delay(5);
+		if(ThingCountName("Page",0) + PAGE_PICKED != G_PAGESCOUNT) {
+			ThrowException("G_PAGES","409","Page spawner failed...");
+			G_GAMEOVER = 4091;
+		} //Otherwise dismiss as false error
+	}
+}
+
+script 410 (void) { //TEST SCRIPT!
+	log(s:"PAGE_hasAnyEmptySpot(0) = ",d:PAGE_hasAnyEmptySpot(0)); log(s:"PAGE_hasAnyEmptySpot(1) = ",d:PAGE_hasAnyEmptySpot(1));
+	for(int i = 0;i < PAGE_getSpotCount();i++) {
+		log(s:"PAGE_SPOTSUSED[",d:i,s:"] = ",d:PAGE_SPOTSUSED[i]);delay(1);
+	}
+}
+
+//Diagnostic for pagespots
+function void PAGE_CheckForErrors(void) {
+	for(int pagecheck = G_PAGEMINSPOT;pagecheck < G_PAGEMAXSPOT + 1;pagecheck++) PAGE_Diag_CheckPageSpot(pagecheck);
+}
+
+function bool PAGE_Diag_CheckPageSpot(int which) {
+	if(thingCount(0,which) > 1) { ThrowException("G_PAGES","PAGE_Diag_CheckPageSpot",StrParam(s:"Multiple pagespots with same TID, Pagespot:",d:which)); return true;
+	} else if(thingCount(0,which) == 0) { ThrowException("G_PAGES","PAGE_Diag_CheckPageSpot",StrParam(s:"Pagespot is missing, TID:",d:which)); return true; }
+	return false;
+}
+
+function void PAGE_Init(void) {
+	//G2_PageCount - Forces page count 
+	//G2_PageAdder - Addes more pages per X players
+	//G2_PageAdderCount - How many pages per X players?
+	//G2_Gamemode - Forces gamemode
+	
+	if(G_PAGEMINSPOT > G_PAGEMAXSPOT) { ThrowException("G_PAGES","567","G_PAGEMINSPOT has larger value than G_PAGEMAXSPOT"); }
+	if(GetCvar("G2_PageCount") > 0) { G_PAGESCOUNT = GetCvar("G2_PageCount"); }
+	if(GetCvar("G2_PageAdder") > 0) { G_PAGESCOUNT += max(0,(PlayerCount()-1) / GetCvar("G2_PageAdder"))*max(1,getcvar("G2_PageAdderCount")); }
+	
+	if(G_PAGESCOUNT == 1) ThrowException("G_MAIN","400","Page Count is 1, picking the page will end the game instantly");
+	if(G_PAGESCOUNT == 0) ThrowException("G_MAIN","400","Page Count is 0");
+	
+	if(PAGE_getSpotCount() > G_PAGESPOTSLOTAMOUNT) { 
+		ThrowException("G_PAGES","567",strparam(s:"Too many pagespots (",d:PAGE_getSpotCount(),s:" the limit is ",d:G_PAGESPOTSLOTAMOUNT));
+		G_PAGEMAXSPOT = G_PAGEMINSPOT + G_PAGESPOTSLOTAMOUNT - 1; //Incase anyone was stupid eneought to ignore this error, or just forgot to fix it
+	}
+	/*
+	if(getcvar("G2_DynamicSkill")) {
+		G_PAGESCOUNT += clamp(0,20,fixeddiv(Player_GetAverageWinLossRatio() - 1.0,4.0) >> 16);
+	}*/
+}
+
+script 568 (void) net { //Do something about this script
+	print(s:"Internal Status\n\nPages in map:",d:ThingCountName("Page",0),s:"\nPages remaining: ",d:G_PAGESCOUNT-PAGE_PICKED);
+}
+
+#define PAGE_HUDMY_MP 520.0
+int ACS_500_subprocesses = 0;
+script 500 (int spot) //PICKED PAGE SCRIPT
+{	
+	//This script is run multiple times so I count how many times
+	ACS_500_subprocesses++;
+	
+	//Notify sections of the ACS about this event
+    PAGE_PICKED++; //Game
+	S_PAGES[PlayerNumber()]++; //Scoreboard
+	
+	NET_Server_SendToClient(PlayerNumber(),863,0,0);
+	NET_Server_SendToAllClients(863,4,PlayerNumber());
+	
+	GiveInventory("G2_PickedPages",1);
+	
+	LIGHTS_BREAK += LIGHTS_BREAKBYPAGE;
+	
+	int savednum = -1; //Which Player you probably saved by picking up the last page
+	if(G_PAGESCOUNT - PAGE_PICKED == 0) { //Achievement checking whom you saved 
+	
+		//TODO: Once the sounds will be better :)
+		/*AmbientSound(strparam(s:"Ghosted2/AllPages",d:random(1,3)),80);
+		
+		AmbientSound("Ghosted2/AllPages1",80);
+		AmbientSound("Ghosted2/AllPages2",80);
+		AmbientSound("Ghosted2/AllPages3",80);*/
+		
+		for(int i = 0;i < 64 && savednum == -1;i++) {
+			if(!PlayerIsAlive(i)) continue;
+			if(i == PlayerNumber()) continue;
+			for(int u = 0;u < GG_PARAREL && savednum == -1;u++) {
+				if(!Ghost_IsSpawned(u)) continue;
+				if(manhattanDistanceFixed(PlayerTag(i),GhostTag(u)) < 800.0) {
+					savednum = i;
+				}
+			}
+		}
+		delay(1);
+		for(int gi = 0;gi < GG_PARAREL;gi++) Ghost_Despawn(gi);
+	}
+	
+	if(S_STARTTIME == 0) {
+		S_STARTTIME = timer();
+	}
+	
+	setfont("BIGFONT");
+	sethudsize(800,600,0);
+
+    if(G_GAMEMODE != GAMEMODE_ENDLESS && PAGE_PICKED < G_PAGESCOUNT) {
+        if(PlayerCount() > 1) {
+			//hudmessagebold(s:"By ",n:0,s:" ( ",d:S_PAGES[PlayerNumber()],s:" )\n\t",d:PAGE_PICKED,s:"/",d:G_PAGESCOUNT;HUDMSG_FADEOUT,4800,CR_WHITE,400.0,500.0,1.5);
+			hudmessagebold(s:"By ",n:0;HUDMSG_FADEOUT,4800,CR_WHITE,400.0,500.0,1.5);
+			setfont("G2NUM");
+			hudmessagebold(s:" \cc( ",d:S_PAGES[PlayerNumber()],s:" )\n\t\cg",d:PAGE_PICKED,s:"/",d:G_PAGESCOUNT;HUDMSG_FADEOUT,4802,CR_RED,400.0,PAGE_HUDMY_MP,1.5);
+			setfont("PGCL");
+			sethudsize(0,0,0);
+			hudmessagebold(s:"a";HUDMSG_FADEOUT,4801,CR_GOLD,0.5,0.74,1.5);
+        } else {
+			setfont("G2NUM");
+			hudmessagebold(s:" \n\t",d:PAGE_PICKED,s:"/",d:G_PAGESCOUNT;HUDMSG_FADEOUT,4800,CR_RED,400.0,500.0,1.5);
+			setfont("PGCL");
+			sethudsize(0,0,0);
+			hudmessagebold(s:"a";HUDMSG_FADEOUT,4801,CR_GOLD,0.5,0.74,1.5);
+        }
+    }  else if(G_GAMEMODE == GAMEMODE_ENDLESS) { //Endless Terror Gamemode
+		if(PlayerCount() > 1) {
+			hudmessagebold(s:"By ",n:0;HUDMSG_FADEOUT,4800,CR_WHITE,400.0,500.0,1.5);
+			setfont("G2NUM");
+			hudmessagebold(s:" \cc( ",d:S_PAGES[PlayerNumber()],s:" )\t\cg ",d:PAGE_PICKED;HUDMSG_FADEOUT,4802,CR_RED,400.0,PAGE_HUDMY_MP,1.5);
+			setfont("PGCL"); sethudsize(0,0,0);
+			hudmessagebold(s:"a";HUDMSG_FADEOUT,4801,CR_GOLD,0.5,0.74,1.5);
+        } else {
+			setfont("G2NUM");
+			hudmessagebold(s:" \n\t",d:PAGE_PICKED;HUDMSG_FADEOUT,4800,CR_RED,400.0,500.0,1.5);
+			setfont("PGCL"); sethudsize(0,0,0);
+			hudmessagebold(s:"a";HUDMSG_FADEOUT,4801,CR_GOLD,0.5,0.74,1.5);
+        }
+	} else if(PAGE_PICKED >= G_PAGESCOUNT){
+        if(PlayerCount() > 1) {
+			sethudsize(800,600,0);
+			hudmessagebold(s:"By ",n:0;HUDMSG_FADEOUT,4800,CR_WHITE,400.0,500.0,1.5);
+			setfont("G2NUM");
+			hudmessagebold(s:" \cc( ",d:S_PAGES[PlayerNumber()],s:" )\n\t\cg",d:PAGE_PICKED,s:"/",d:G_PAGESCOUNT;HUDMSG_FADEOUT,4802,CR_RED,400.0,PAGE_HUDMY_MP,1.5);
+			setfont("APGCL");
+			sethudsize(0,0,0);
+			hudmessagebold(s:"a";HUDMSG_FADEOUT,4801,CR_GOLD,0.5,0.5,1.5);
+        } else {
+			sethudsize(800,600,0);
+			//hudmessagebold(s:" \n\t";HUDMSG_FADEOUT,4800,CR_WHITE,400.0,500.0,1.5);
+			//setfont("G2NUM");
+			//hudmessagebold(s:"\n\t",d:PAGE_PICKED;HUDMSG_FADEOUT,4800,CR_RED,400.0,500.0,1.5);
+			setfont("APGCL");
+			sethudsize(0,0,0);
+			hudmessagebold(s:"a";HUDMSG_FADEOUT,4801,CR_GOLD,0.5,0.5,1.5);
+        }
+    }
+	
+	if(savednum != -1 && PlayerIsAlive(savednum) && GetActorProperty(PlayerTag(savednum),APROP_HEALTH) < 57) {
+		NET_Server_SendToClient(PlayerNumber(),863,6,savednum);
+	}
+	
+	//Log into server's console :)
+	if(GetCvar("G2_Notify") >= 1) {
+		if(G_GAMEMODE == GAMEMODE_ENDLESS) {
+			log(s:"Ghosted 2 :: ",n:0,s: " picked up page ",d:PAGE_PICKED);
+		} else {
+			log(s:"Ghosted 2 :: ",n:0,s: " picked up page ",d:PAGE_PICKED,s:" out of ",d:G_PAGESCOUNT);
+		}
+	}
+	
+	//IDENTIFY WHICH PAGE THIS WAS!!
+	int closest = PAGE_NearestSpot(0);
+	
+	delay(1);
+	
+	if(G_PAGESCOUNT-PAGE_PICKED == 1) {
+		delay(35 * 5);
+		if(G_PAGESCOUNT-PAGE_PICKED == 1) {
+			setfont("PGLT");
+			sethudsize(0,0,0);
+			hudmessagebold(s:"a";HUDMSG_FADEINOUT,4801,CR_GOLD,0.5,0.5,1.5);
+		}
+	}
+	
+	if(ACS_500_subprocesses > 100) {
+		setfont("CONFONT");
+		G2_PrintWarningBold(strparam(s:"Script 500 is now running ",d:ACS_500_subprocesses,s:" times at once!"));
+	}
+	
+	
+	
+	int counter = 0; //to avoid jamming the level
+	//wait two minutes before just spawning the page
+	//no need to have really accurate distance
+	while(manhattanDistanceFixed(G_ClosestPlayer(closest),closest) < 2000.0 && ACS_500_subprocesses < 200 && counter < 120) {
+		counter++;
+		delay(35);
+	}
+	
+	PAGE_SPOTSUSED[closest-G_PAGEMINSPOT] = 0;
+	ACS_500_subprocesses--;
+}
+
+//Seriously, I couldn't get all simpler methods to work.. FY ZDoom
+function int PAGE_NearestSpot(int towho) {  int br,prd = 999999; for(int i = G_PAGEMINSPOT;i <= G_PAGEMAXSPOT;i++) { int d = distance(towho,i); if(d < prd) { br = i; prd = d; } } return br; }
+function int PAGE_BestPlayer (void) { int bestpages,bestnumber;for(int i = 0;i < 64;i++) { if(S_PAGES[i] > bestpages) { S_PAGES[i] = bestpages; bestnumber = i; } } return bestnumber; }
+function int PAGE_BestLivingPlayer (void) { int bestpages,bestnumber;for(int i = 0;i < 64;i++) { if(S_PAGES[i] > bestpages && getActorProperty(PlayerTag(i),APROP_HEALTH) > 0) { S_PAGES[i] = bestpages; bestnumber = i; } } return bestnumber; }
