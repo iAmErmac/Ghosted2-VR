@@ -9,7 +9,6 @@ actor G2_Player : PlayerPawn
   Player.DisplayName "Flashlight"
   Player.StartItem "Flashlight"
   Player.StartItem "FlashLightSwitch", 1
-  Player.StartItem "GHOffhandFist"
   Player.StartItem "BatteryPower", 31500
   //Player.StartItem "PowerFlashlight"
   Player.CrouchSprite "PLYC"
@@ -98,7 +97,6 @@ actor G2_PlayerLighter : PlayerPawn
   PainChance 255
   Player.DisplayName "Lighter"
   Player.StartItem "Lighter"
-  Player.StartItem "GHOffhandFist"
   Player.StartItem "BatteryPower", 31500
   Player.CrouchSprite "PLYC"
   Player.ColorRange 112, 127
@@ -186,7 +184,6 @@ actor G2_PlayerGlowstick : PlayerPawn
   PainChance 255
   Player.DisplayName "Glowstick"
   Player.StartItem "Glowstick"
-  Player.StartItem "GHOffhandFist"
   Player.StartItem "Glowsticks",6
   Player.StartItem "BatteryPower", 31500
   Player.CrouchSprite "PLYC"

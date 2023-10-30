@@ -1,3 +1,51 @@
+class G2LightBeamTracer : Actor
+{
+	Vector3 t_pos;
+	double t_pitch;
+	
+	override void BeginPlay()
+	{
+		t_pos = self.pos;
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+		
+		let dX = t_pos.x - self.pos.x;
+		let dY = t_pos.y - self.pos.y;
+		let dZ = t_pos.z - self.pos.z;
+		
+		t_pitch = (atan2(sqrt(dX * dX + dY * dY), dZ) * -1) + 90;
+		
+		PowerFlashlight(master).handPos = t_pos;
+		PowerFlashlight(master).beamPitch = t_pitch;
+		PowerFlashlight(master).beamAngle = angle;
+	}
+
+	Default
+	{
+	Projectile;
+	+MISSILE;
+	+NOGRAVITY;
+	+NOBLOCKMAP;
+	+DONTSPLASH;
+	+THRUACTORS;
+	Radius 1;
+	Height 1;
+	Damage 0;
+	Speed 65;
+	RenderStyle "None";
+	}
+	
+	States
+	{
+	Spawn:
+		TNT1 A 1; //don't need more than a single tick
+		Stop;
+	}
+}
+
 class PowerFlashlight : Powerup
 {
     Property EnergyType : energyType;               // Light flickers when player is low on this inventory class
@@ -64,11 +112,14 @@ class PowerFlashlight : Powerup
     FlashlightBeam spot;
     FlashlightBeam spill;
 
+	vector3 handPos;
+	double beamAngle, beamPitch;
+
     override void AttachToOwner(Actor other)
     {
         Super.AttachToOwner(other);
 
-        spot = FlashlightBeam(Spawn("FlashlightBeam", other.pos));
+        spot = FlashlightBeam(Spawn("FlashlightBeam", (0,0,0)));
         spot.master = other;
         spot.offset = (ofsX, ofsY, ofsZ);
         spot.args[0] = spotColor.r;
@@ -80,7 +131,7 @@ class PowerFlashlight : Powerup
 
         if (spillRange > 0)
         {
-            spill = FlashlightBeam(Spawn("FlashlightBeam", other.pos));
+            spill = FlashlightBeam(Spawn("FlashlightBeam", (0,0,0)));
             spill.master = other;
             spill.offset = (ofsX, ofsY, ofsZ);
             spill.args[0] = spillColor.r;
@@ -105,18 +156,31 @@ class PowerFlashlight : Powerup
 		owner.SetInventory("BatteryDisplay1", FirstChar.toInt());
 		owner.SetInventory("BatteryDisplay2", SecondChar.toInt());
 		
+		Actor beamTracer = owner.SpawnPlayerMissile("G2LightBeamTracer");
+		if(beamTracer) beamTracer.master = self;
+		
+		if(!beamAngle || !beamPitch) return;
+		
 		let player = owner.player;
 		let pmo = player.mo;
-		int hand = player.OffhandWeapon is "Flashlight";
 		double angle = pmo.angle;
 		double pitch = pmo.AimTarget() ? pmo.BulletSlope(null, ALF_PORTALRESTRICT) : pmo.pitch;
 		double dist = 5;
 		if(abs(pmo.vel.x) > 2 || abs(pmo.vel.y) > 2 || abs(pmo.vel.z) > 2) dist = 15;
 		
-		let _puff = pmo.LineAttack(angle, dist, pitch, 0, "melee", "GHDummyPuff1", LAF_NOIMPACTDECAL | LAF_NOINTERACT | LAF_NORANDOMPUFFZ | (hand ? LAF_ISOFFHAND : 0));
-		
+		let _puff = pmo.LineAttack(angle, dist, pitch, 0, "melee", "GHDummyPuff1", LAF_NOIMPACTDECAL | LAF_NOINTERACT | LAF_NORANDOMPUFFZ);
 		spot.beamPos = spill.beamPos = _puff.pos;
-		spot.hand = spill.hand = hand;
+		
+		if(beamAngle)
+		{
+			spot.beamAngle = beamAngle;
+			spill.beamAngle = beamAngle;
+		}
+		if(beamPitch)
+		{
+			spot.beamPitch = beamPitch;
+			spill.beamPitch = beamPitch;
+		}
 
         int energy = energyType ? owner.CountInv(energyType) : effectTics;
 
@@ -147,7 +211,7 @@ class PowerFlashlight : Powerup
 class FlashlightBeam : SpotLight
 {
     Vector3 offset, beamPos;
-	int hand;
+	Double beamAngle, beamPitch;
 
     override void Tick()
     {
@@ -173,7 +237,7 @@ class FlashlightBeam : SpotLight
         vel = master.vel;
         //angle = master.angle;
 		//pitch = master.pitch;
-        angle = (hand ? plyr.OffhandAngle : plyr.AttackAngle) + 90.0;
-        pitch = -(hand ? plyr.OffhandPitch : plyr.AttackPitch);
+        angle = beamAngle;
+        pitch = beamPitch;
     }
 }

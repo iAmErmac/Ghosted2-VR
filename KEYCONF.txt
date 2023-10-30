@@ -4,7 +4,7 @@ addplayerclass "G2_PlayerLighter"
 addplayerclass "G2_PlayerGlowstick"
 
 weaponsection "G2"
-setslot 1 GHOffhandFist FlashLight Lighter Glowstick
+setslot 1 FlashLight Lighter Glowstick
 setslot 3 Shotgun SuperShotgun
 
 alias HELP "echo GHOSTED 2 CVARS and SETTINGS;DRAWLINE;HELP_SetRecommendedSettings;HELP_GhostCam;HELP_GN;HELP_GNSight;HELP_GNLimiter;HELP_ForceGamemode"

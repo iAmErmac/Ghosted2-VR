@@ -20,7 +20,6 @@ ACTOR Flashlight : Weapon 30030
 	Weapon.AmmoGive 15000
 	+WEAPON.NOAUTOAIM
 	+WEAPON.MELEEWEAPON
-	+WEAPON.NOHANDSWITCH
 
 	States 
 	{ 

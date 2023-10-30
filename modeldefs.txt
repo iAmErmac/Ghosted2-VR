@@ -1,5 +1,4 @@
 
-#include "modeldefs/offhandfist.txt"
 #include "modeldefs/flashlight.txt"
 #include "modeldefs/lighter.txt"
 #include "modeldefs/glowstick.txt"

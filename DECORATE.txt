@@ -16,7 +16,6 @@
 #include "Actors/G2_Page.txt"
 
 // WEAPONS
-#include "Actors/G2_Offhand.txt"
 #include "Actors/G2_Flashlight.txt"
 #include "Actors/G2_Lighter.txt"
 #include "Actors/G2_GlowStick.txt"

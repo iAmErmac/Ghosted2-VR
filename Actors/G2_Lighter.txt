@@ -5,7 +5,6 @@ ACTOR Lighter : LighterZ
 	Inventory.PickupMessage "Picked up a Lighter"
 	Inventory.PickupSound "weapons/lighter_open"
 	+WEAPON.MELEEWEAPON
-	+WEAPON.NOHANDSWITCH
 
 	States
 	{

@@ -10,7 +10,6 @@ ACTOR GlowStick : GlowStickZ
 	Weapon.ammouse2 1
 	+WEAPON.NOAUTOAIM
 	+WEAPON.MELEEWEAPON
-	+WEAPON.NOHANDSWITCH
 	
 	renderstyle add
 	scale 0.2
