@@ -6,6 +6,13 @@ Class Ghosted2_SpecialWeaponHandler : EventHandler
 		_isTitlemap = CheckTitlemap();
 	}
 	
+	override void PlayerEntered(PlayerEvent e)
+	{
+		PlayerInfo player = players[e.PlayerNumber];
+		int gameMode = CVar.GetCVar("G2_GAMEMODE", player).GetInt();
+		if(gameMode == 0) CVar.GetCVar("G2_Launched", player).SetInt(0);
+	}
+	
 	override void WorldTick()
 	{
 		if(_isTitlemap) return;
