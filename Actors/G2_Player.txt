@@ -8,12 +8,14 @@ actor G2_Player : PlayerPawn
   PainChance 255
   Player.DisplayName "Flashlight"
   Player.StartItem "Flashlight"
+  Player.StartItem "FlashLightSwitch", 1
   Player.StartItem "GHOffhandFist"
   Player.StartItem "BatteryPower", 31500
-  Player.StartItem "PowerFlashlight"
+  //Player.StartItem "PowerFlashlight"
   Player.CrouchSprite "PLYC"
   Player.ColorRange 112, 127
   damagefactor "LightAnnihilation" ,0.1
+  Player.Portrait "PLFLA0"
 
   States
   {
@@ -101,6 +103,7 @@ actor G2_PlayerLighter : PlayerPawn
   Player.CrouchSprite "PLYC"
   Player.ColorRange 112, 127
   damagefactor "LightAnnihilation" ,0.1
+  Player.Portrait "PLZPA0"
  
   States
   {
@@ -189,6 +192,7 @@ actor G2_PlayerGlowstick : PlayerPawn
   Player.CrouchSprite "PLYC"
   Player.ColorRange 112, 127
   damagefactor "LightAnnihilation" ,0.1
+  Player.Portrait "PLGSA0"
  
   States
   {

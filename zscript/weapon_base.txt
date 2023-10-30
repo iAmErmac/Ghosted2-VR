@@ -13,8 +13,6 @@ Class Ghosted2_SpecialWeaponHandler : EventHandler
 		playerinfo player = players[consoleplayer];
 		if(!player) return;
 		
-		console.printf(""..player.mo.countinv("GHOffhandFist"));
-		
 		if(!player.OffhandWeapon)
 		{
 			let offhandfistweap = Weapon(player.mo.findinventory("GHOffhandFist"));

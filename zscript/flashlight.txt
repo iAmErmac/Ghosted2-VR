@@ -99,6 +99,7 @@ class PowerFlashlight : Powerup
 		if(!owner || !owner.player) return;
 		
 		let batteryPowerLevel = ""..(owner.CountInv(energyType) * 100 / owner.findinventory(energyType).maxamount);
+		if(batteryPowerLevel.Length() == 1) batteryPowerLevel = "0"..batteryPowerLevel;
 		let FirstChar = batteryPowerLevel.Left(1);
 		let SecondChar = batteryPowerLevel.Mid(1,1);
 		owner.SetInventory("BatteryDisplay1", FirstChar.toInt());
@@ -145,8 +146,7 @@ class PowerFlashlight : Powerup
 // Spotlight that follows its master around
 class FlashlightBeam : SpotLight
 {
-    Vector3 offset;
-    Vector3 beamPos;
+    Vector3 offset, beamPos;
 	int hand;
 
     override void Tick()
@@ -154,7 +154,6 @@ class FlashlightBeam : SpotLight
         Super.Tick();
 
         let plyr = PlayerPawn(master);
-        //Vector3 beamPos = plyr.AttackPos;
         /*Vector3 beamPos = master.pos;
         beamPos.xy += AngleToVector(master.angle, offset.x);
         beamPos.xy += AngleToVector(master.angle - 90, offset.y);
